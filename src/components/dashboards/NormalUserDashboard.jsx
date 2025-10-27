@@ -81,7 +81,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
         <div className="mb-6">
           <input
             type="text"
-            placeholder="🔍 Search tickets by ID, title, or description..."
+            placeholder="Search tickets by ID, title, or description..."
             onChange={(e) => {
               const search = e.target.value.toLowerCase()
               if (!search) {
@@ -184,7 +184,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
                 </div>
                 {ticket.status === 'Closed' && ticket.resolved_at && (
                   <div className="mt-3 pt-3 border-t text-sm text-green-600">
-                    ✓ Resolved on {new Date(ticket.resolved_at).toLocaleDateString()}
+                    Resolved on {new Date(ticket.resolved_at).toLocaleDateString()}
                   </div>
                 )}
               </div>

@@ -101,7 +101,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
         <div className="mb-6">
           <input
             type="text"
-            placeholder="🔍 Search users by name, email, or role..."
+            placeholder="Search users by name, email, or role..."
             onChange={(e) => {
               const search = e.target.value.toLowerCase()
               if (!search) {
@@ -167,15 +167,15 @@ export default function SystemAdminDashboard({ user, onLogout }) {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center p-3 bg-green-50 rounded">
                     <span className="font-medium">API Status</span>
-                    <span className="text-green-600 font-semibold">✓ Operational</span>
+                    <span className="text-green-600 font-semibold">Operational</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-green-50 rounded">
                     <span className="font-medium">Database</span>
-                    <span className="text-green-600 font-semibold">✓ Connected</span>
+                    <span className="text-green-600 font-semibold">Connected</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-green-50 rounded">
                     <span className="font-medium">Authentication</span>
-                    <span className="text-green-600 font-semibold">✓ Active</span>
+                    <span className="text-green-600 font-semibold">Active</span>
                   </div>
                 </div>
               </div>

@@ -116,7 +116,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
         <div className="mb-6">
           <input
             type="text"
-            placeholder="🔍 Search tickets by ID, title, or description..."
+            placeholder="Search tickets by ID, title, or description..."
             onChange={(e) => {
               const search = e.target.value.toLowerCase()
               if (!search) {
@@ -353,7 +353,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
               onClick={handleExportExcel}
               className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
             >
-              📊 Export Excel
+              Export Excel
             </button>
           </div>
         )}

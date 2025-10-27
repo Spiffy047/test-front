@@ -14,7 +14,7 @@ export default function SLAAdherenceCard() {
 
   if (!data) return <div className="bg-white rounded-lg shadow p-6">Loading...</div>
 
-  const percentage = data.adherence_percentage || 0
+  const percentage = data.sla_adherence || 0
   const color = percentage >= 90 ? 'green' : percentage >= 75 ? 'yellow' : 'red'
 
   return (
@@ -24,7 +24,7 @@ export default function SLAAdherenceCard() {
         <div>
           <div className="text-4xl font-bold text-gray-900">{percentage.toFixed(1)}%</div>
           <div className="text-sm text-gray-600 mt-1">
-            {data.met_sla} of {data.total_tickets} tickets met SLA
+            {data.on_time} of {data.total_tickets} tickets met SLA
           </div>
         </div>
         <div className={`w-24 h-24 rounded-full flex items-center justify-center ${
@@ -35,13 +35,13 @@ export default function SLAAdherenceCard() {
             color === 'green' ? 'text-green-600' :
             color === 'yellow' ? 'text-yellow-600' : 'text-red-600'
           }`}>
-            {percentage >= 90 ? '✓' : percentage >= 75 ? '!' : '✗'}
+            {percentage.toFixed(0)}%
           </span>
         </div>
       </div>
-      {data.violated_sla > 0 && (
+      {data.violations > 0 && (
         <div className="mt-4 p-3 bg-red-50 rounded-md text-sm text-red-800">
-          {data.violated_sla} ticket{data.violated_sla !== 1 ? 's' : ''} violated SLA
+          {data.violations} ticket{data.violations !== 1 ? 's' : ''} violated SLA
         </div>
       )}
     </div>

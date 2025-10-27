@@ -113,7 +113,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6">
           <input
             type="text"

@@ -187,12 +187,16 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
         {activeTab === 'dashboard' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {Object.entries(statusCounts).map(([status, count]) => (
-                <div key={status} className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: `${status} Tickets`, data: tickets.filter(t => t.status === status) })}>
-                  <div className="text-sm text-gray-600">{status}</div>
-                  <div className="text-3xl font-bold text-gray-900 mt-2">{count}</div>
-                </div>
-              ))}
+              {Object.entries(statusCounts).map(([status, count]) => {
+                const capitalizedStatus = status.charAt(0).toUpperCase() + status.slice(1)
+                const filteredTickets = tickets.filter(t => t.status === capitalizedStatus)
+                return (
+                  <div key={status} className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: `${capitalizedStatus} Tickets`, data: filteredTickets })}>
+                    <div className="text-sm text-gray-600">{capitalizedStatus}</div>
+                    <div className="text-3xl font-bold text-gray-900 mt-2">{count}</div>
+                  </div>
+                )
+              })}
             </div>
 
             {unassignedTickets.length > 0 && (

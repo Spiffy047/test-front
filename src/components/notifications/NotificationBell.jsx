@@ -23,20 +23,38 @@ export default function NotificationBell({ user }) {
   const fetchAlerts = async () => {
     try {
       const response = await fetch(`${API_URL}/alerts/${user.id}`)
-      const data = await response.json()
+      if (!response.ok) {
+        setAlerts([])
+        return
+      }
+      const text = await response.text()
+      if (!text) {
+        setAlerts([])
+        return
+      }
+      const data = JSON.parse(text)
       setAlerts(data.slice(0, 10)) // Show latest 10
     } catch (err) {
-      console.error('Failed to fetch alerts:', err)
+      setAlerts([])
     }
   }
 
   const fetchUnreadCount = async () => {
     try {
       const response = await fetch(`${API_URL}/alerts/${user.id}/count`)
-      const data = await response.json()
-      setUnreadCount(data.count)
+      if (!response.ok) {
+        setUnreadCount(0)
+        return
+      }
+      const text = await response.text()
+      if (!text) {
+        setUnreadCount(0)
+        return
+      }
+      const data = JSON.parse(text)
+      setUnreadCount(data.count || 0)
     } catch (err) {
-      console.error('Failed to fetch unread count:', err)
+      setUnreadCount(0)
     }
   }
 

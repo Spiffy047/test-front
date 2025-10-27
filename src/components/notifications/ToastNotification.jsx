@@ -29,11 +29,11 @@ export default function ToastNotification({ notification, onClose }) {
 
   const getIcon = (type) => {
     switch (type) {
-      case 'sla_breach': return '⚠️'
-      case 'ticket_assigned': return '👤'
-      case 'ticket_updated': return '🔄'
-      case 'new_ticket': return '🎫'
-      default: return '🔔'
+      case 'sla_breach': return '!'
+      case 'ticket_assigned': return 'A'
+      case 'ticket_updated': return 'U'
+      case 'new_ticket': return 'N'
+      default: return 'i'
     }
   }
 
@@ -58,7 +58,7 @@ export default function ToastNotification({ notification, onClose }) {
                 }}
                 className="text-white hover:text-gray-200 ml-2"
               >
-                ✕
+                ×
               </button>
             </div>
             <p className="text-sm mt-1 opacity-90">

@@ -205,7 +205,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                     rel="noopener noreferrer"
                     className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm flex items-center gap-2"
                   >
-                    📎 {att.filename} ({att.file_size_mb}MB)
+                    {att.filename} ({att.file_size_mb}MB)
                   </a>
                 ))}
               </div>
@@ -313,7 +313,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                 ) : (
                   <>
                     <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center">
-                      <span className="text-gray-600 text-xs">⚙</span>
+                      <span className="text-gray-600 text-xs">S</span>
                     </div>
                     <div className="flex-1 bg-gray-100 rounded-lg p-3">
                       <p className="text-sm text-gray-700">{item.description}</p>
@@ -356,7 +356,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                 disabled={uploading}
                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm disabled:opacity-50"
               >
-                {uploading ? '⏳' : '📎'} Attach
+                {uploading ? 'Uploading...' : 'Attach'}
               </button>
               <button
                 type="submit"

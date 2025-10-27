@@ -325,7 +325,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
                   return agentViolations > 0
                 }).length === 0 && (
                   <div className="text-center text-gray-500 py-4">
-                    ✓ No agents with SLA violations
+                    No agents with SLA violations
                   </div>
                 )}
               </div>

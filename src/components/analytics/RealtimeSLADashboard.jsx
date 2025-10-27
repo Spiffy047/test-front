@@ -161,9 +161,9 @@ export default function RealtimeSLADashboard({ onCardClick }) {
                   <div className="text-sm text-gray-600">
                     Target: {data.target_hours}h
                     {data.within_target ? (
-                      <span className="ml-2 text-green-600">✓ Within target</span>
+                      <span className="ml-2 text-green-600">Within target</span>
                     ) : (
-                      <span className="ml-2 text-red-600">✗ Exceeds target</span>
+                      <span className="ml-2 text-red-600">Exceeds target</span>
                     )}
                   </div>
                 </div>

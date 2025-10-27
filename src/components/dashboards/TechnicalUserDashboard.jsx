@@ -134,28 +134,27 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2">
-            <AgentPerformanceCard agentId={user.id} onCardClick={setModalData} tickets={tickets} />
+        <div className="mb-6">
+          <AgentPerformanceCard agentId={user.id} onCardClick={setModalData} tickets={tickets} />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: 'My Assigned Tickets', data: myTickets })}>
+            <div className="text-sm text-gray-600">Assigned Tickets</div>
+            <div className="text-3xl font-bold text-blue-600 mt-2">
+              {myTickets.length}
+            </div>
           </div>
-          <div className="space-y-4">
-            <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: 'My Assigned Tickets', data: myTickets })}>
-              <div className="text-sm text-gray-600">Assigned Tickets</div>
-              <div className="text-3xl font-bold text-blue-600 mt-2">
-                {myTickets.length}
-              </div>
+          <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: 'All Tickets', data: tickets })}>
+            <div className="text-sm text-gray-600">Total Tickets</div>
+            <div className="text-3xl font-bold text-gray-900 mt-2">
+              {tickets.length}
             </div>
-            <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: 'All Tickets', data: tickets })}>
-              <div className="text-sm text-gray-600">Total Tickets</div>
-              <div className="text-3xl font-bold text-gray-900 mt-2">
-                {tickets.length}
-              </div>
-            </div>
-            <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: 'SLA Breached Tickets', data: tickets.filter(t => t.sla_violated) })}>
-              <div className="text-sm text-gray-600">SLA Breached</div>
-              <div className="text-3xl font-bold text-red-600 mt-2">
-                {tickets.filter(t => t.sla_violated).length}
-              </div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: 'SLA Breached Tickets', data: tickets.filter(t => t.sla_violated) })}>
+            <div className="text-sm text-gray-600">SLA Breached</div>
+            <div className="text-3xl font-bold text-red-600 mt-2">
+              {tickets.filter(t => t.sla_violated).length}
             </div>
           </div>
         </div>

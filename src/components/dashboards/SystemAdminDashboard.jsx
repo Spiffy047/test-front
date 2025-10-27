@@ -275,11 +275,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
           </div>
         )}
 
-        {activeTab === 'analytics' && (
-          <div className="space-y-6">
-            <AgentPerformanceScorecard />
-          </div>
-        )}
+
       </main>
 
       {showUserModal && (

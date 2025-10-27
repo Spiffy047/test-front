@@ -28,9 +28,9 @@ function App() {
       const data = await response.json()
       console.log('Login response:', data) // Debug log
       
-      if (response.ok && data.success) {
+      if (response.ok && (data.success || data.access_token)) {
         setUser(data.user)
-        localStorage.setItem('token', data.token)
+        localStorage.setItem('token', data.access_token || data.token)
       } else {
         throw new Error(data.message || 'Invalid email or password')
       }

@@ -98,7 +98,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6">
           <input
             type="text"

@@ -6,7 +6,7 @@ export default function SLAAdherenceCard() {
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    fetch(`${API_URL}/tickets/analytics/sla-adherence`)
+    fetch(`${API_URL}/tickets/analytics/sla-adherence?t=${Date.now()}`)
       .then(res => res.json())
       .then(setData)
       .catch(console.error)

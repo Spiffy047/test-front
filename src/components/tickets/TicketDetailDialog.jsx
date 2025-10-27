@@ -143,7 +143,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+      <div className="bg-white rounded-lg shadow-xl w-full max-h-[90vh] flex flex-col" style={{maxWidth: '76rem'}}>
         <div className="p-6 border-b">
           <div className="flex justify-between items-start">
             <div>

@@ -5,6 +5,7 @@ import DataModal from '../common/DataModal'
 import AgentPerformanceCard from '../analytics/AgentPerformanceCard'
 import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
+import Footer from '../common/Footer'
 
 const API_URL = 'https://hotfix.onrender.com/api'
 
@@ -88,11 +89,11 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
   const slaViolationTickets = displayTickets.filter(t => t.sla_violated && t.status !== 'Closed')
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">IT ServiceDesk - Agent Portal</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Hotfix ServiceDesk - Agent Portal</h1>
             <div className="flex items-center gap-4">
               <NotificationBell user={user} />
               <div className="text-sm">
@@ -319,6 +320,8 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           }}
         />
       ))}
+      
+      <Footer />
     </div>
   )
 }

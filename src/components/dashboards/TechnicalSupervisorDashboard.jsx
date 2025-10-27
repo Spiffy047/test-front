@@ -6,6 +6,7 @@ import TicketAgingAnalysis from '../analytics/TicketAgingAnalysis'
 import RealtimeSLADashboard from '../analytics/RealtimeSLADashboard'
 import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import DataModal from '../common/DataModal'
+import Footer from '../common/Footer'
 
 const API_URL = 'https://hotfix.onrender.com/api'
 
@@ -90,11 +91,11 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">IT ServiceDesk - Supervisor Portal</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Hotfix ServiceDesk - Supervisor Portal</h1>
             <div className="flex items-center gap-4">
               <div className="text-sm">
                 <span className="text-gray-600">Welcome, </span>
@@ -427,6 +428,8 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
           }}
         />
       )}
+      
+      <Footer />
     </div>
   )
 }

@@ -3,6 +3,7 @@ import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import DataModal from '../common/DataModal'
 import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
+import Footer from '../common/Footer'
 
 
 const API_URL = 'https://hotfix.onrender.com/api'
@@ -355,6 +356,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
         />
       ))}
 
+      <Footer />
     </div>
   )
 }

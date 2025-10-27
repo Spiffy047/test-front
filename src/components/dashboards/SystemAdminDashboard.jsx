@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import SLAAdherenceCard from '../analytics/SLAAdherenceCard'
 import AgentPerformanceScorecard from '../analytics/AgentPerformanceScorecard'
+import Footer from '../common/Footer'
 
 
 const API_URL = 'https://hotfix.onrender.com/api'
@@ -342,7 +343,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
         </div>
       )}
       
-
+      <Footer />
     </div>
   )
 }

@@ -5,6 +5,7 @@ import DataModal from '../common/DataModal'
 import AgentPerformanceCard from '../analytics/AgentPerformanceCard'
 import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
+import Footer from '../common/Footer'
 
 
 const API_URL = 'https://hotfix.onrender.com/api'
@@ -322,6 +323,7 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
         />
       ))}
 
+      <Footer />
     </div>
   )
 }

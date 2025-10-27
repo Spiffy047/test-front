@@ -6,7 +6,7 @@ import TicketAgingAnalysis from '../analytics/TicketAgingAnalysis'
 import RealtimeSLADashboard from '../analytics/RealtimeSLADashboard'
 import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import DataModal from '../common/DataModal'
-import Footer from '../common/Footer'
+
 
 const API_URL = 'https://hotfix.onrender.com/api'
 
@@ -91,7 +91,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
@@ -113,7 +113,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
         </div>
       </header>
 
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
+      <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
         <div className="mb-6">
           <input
             type="text"
@@ -135,7 +135,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: 'All Tickets', data: tickets })}>
             <div className="text-sm text-gray-600">All Tickets</div>
             <div className="text-3xl font-bold text-gray-900 mt-2">
@@ -163,7 +163,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
         </div>
 
         <div className="mb-6 border-b border-gray-200">
-          <nav className="flex flex-wrap gap-4">
+          <nav className="flex gap-4">
             <button
               onClick={() => setActiveTab('dashboard')}
               className={`px-4 py-2 font-medium ${activeTab === 'dashboard' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
@@ -345,7 +345,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
         {activeTab === 'analytics' && (
           <div className="space-y-6">
             <RealtimeSLADashboard onCardClick={setModalData} />
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <AgentPerformanceScorecard />
               <TicketAgingAnalysis />
             </div>
@@ -430,8 +430,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
           }}
         />
       )}
-      
-      <Footer />
+
     </div>
   )
 }

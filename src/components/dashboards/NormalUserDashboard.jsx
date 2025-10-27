@@ -3,7 +3,7 @@ import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import DataModal from '../common/DataModal'
 import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
-import Footer from '../common/Footer'
+
 
 const API_URL = 'https://hotfix.onrender.com/api'
 
@@ -79,7 +79,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
@@ -101,7 +101,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
         </div>
       </header>
 
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
+      <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
         <div className="mb-6">
           <input
             type="text"
@@ -123,7 +123,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: 'Open Tickets', data: tickets.filter(t => t.status !== 'Closed') })}>
             <div className="text-sm text-gray-600">Open Tickets</div>
             <div className="text-3xl font-bold text-blue-600 mt-2">
@@ -258,7 +258,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Priority <span className="text-red-500">*</span>
@@ -354,8 +354,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
           }}
         />
       ))}
-      
-      <Footer />
+
     </div>
   )
 }

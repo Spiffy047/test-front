@@ -98,7 +98,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
+      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
         <div className="mb-6">
           <input
             type="text"

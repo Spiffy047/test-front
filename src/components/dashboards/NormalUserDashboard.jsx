@@ -101,7 +101,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
+      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
         <div className="mb-6">
           <input
             type="text"
@@ -123,7 +123,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
           />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: 'Open Tickets', data: tickets.filter(t => t.status !== 'Closed') })}>
             <div className="text-sm text-gray-600">Open Tickets</div>
             <div className="text-3xl font-bold text-blue-600 mt-2">
@@ -258,7 +258,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Priority <span className="text-red-500">*</span>

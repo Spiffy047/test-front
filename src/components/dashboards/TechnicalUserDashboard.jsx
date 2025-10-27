@@ -112,7 +112,7 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
+      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
         <div className="mb-6">
           <input
             type="text"
@@ -138,7 +138,7 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           <AgentPerformanceCard agentId={user.id} onCardClick={setModalData} tickets={tickets} />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setModalData({ title: 'My Assigned Tickets', data: myTickets })}>
             <div className="text-sm text-gray-600">Assigned Tickets</div>
             <div className="text-3xl font-bold text-blue-600 mt-2">
@@ -160,9 +160,9 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
         </div>
 
 
-        <div className="mb-6 flex justify-between items-center">
+        <div className="mb-6">
           <div className="border-b border-gray-200">
-            <nav className="flex gap-4">
+            <nav className="flex flex-wrap gap-4">
               <button
                 onClick={() => setActiveTab('myQueue')}
                 className={`px-4 py-2 font-medium ${activeTab === 'myQueue' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}

@@ -161,7 +161,7 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
                     <span className="text-gray-600 ml-2">{ticket.title}</span>
                   </div>
                   <button
-                    onClick={() => handleStatusUpdate(ticket.id, 'In Progress')}
+                    onClick={() => handleStatusUpdate(ticket.id, 'Open')}
                     className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
                   >
                     Take Action

@@ -15,9 +15,11 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
   const [selectedTicket, setSelectedTicket] = useState(null)
   const [modalData, setModalData] = useState(null)
   const [toastNotifications, setToastNotifications] = useState([])
+  const [agentWorkload, setAgentWorkload] = useState([])
 
   useEffect(() => {
     fetchTickets()
+    fetchAgentWorkload()
   }, [])
 
   // Fetch all tickets from API
@@ -28,6 +30,16 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
       setTickets(data)
     } catch (err) {
       console.error('Failed to fetch tickets:', err)
+    }
+  }
+
+  const fetchAgentWorkload = async () => {
+    try {
+      const response = await fetch(`${API_URL}/analytics/agent-workload`)
+      const data = await response.json()
+      setAgentWorkload(data)
+    } catch (err) {
+      console.error('Failed to fetch agent workload:', err)
     }
   }
 
@@ -46,6 +58,25 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
       fetchTickets()  // Refresh ticket list
     } catch (err) {
       console.error('Failed to update ticket:', err)
+    }
+  }
+
+  // Assign ticket to agent
+  const handleAssignTicket = async (ticketId, agentId) => {
+    try {
+      await fetch(`${API_URL}/tickets/${ticketId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assigned_to: agentId,
+          performed_by: user.id,
+          performed_by_name: user.name
+        })
+      })
+      fetchTickets()
+      fetchAgentWorkload()
+    } catch (err) {
+      console.error('Failed to assign ticket:', err)
     }
   }
 
@@ -160,12 +191,26 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
                     <span className="font-medium">{ticket.id}</span>
                     <span className="text-gray-600 ml-2">{ticket.title}</span>
                   </div>
-                  <button
-                    onClick={() => handleStatusUpdate(ticket.id, 'Open')}
-                    className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
-                  >
-                    Take Action
-                  </button>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleStatusUpdate(ticket.id, 'Open')}
+                      className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                    >
+                      Take Action
+                    </button>
+                    <select
+                      onChange={(e) => e.target.value && handleAssignTicket(ticket.id, e.target.value)}
+                      className="px-2 py-1 border border-gray-300 rounded text-sm"
+                      defaultValue=""
+                    >
+                      <option value="">Reassign...</option>
+                      {agentWorkload.map(agent => (
+                        <option key={agent.agent_id} value={agent.agent_id}>
+                          {agent.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               ))}
             </div>

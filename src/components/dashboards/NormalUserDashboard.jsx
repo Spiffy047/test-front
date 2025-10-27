@@ -3,6 +3,7 @@ import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import DataModal from '../common/DataModal'
 import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
+import Footer from '../common/Footer'
 
 const API_URL = 'https://hotfix.onrender.com/api'
 
@@ -78,7 +79,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
@@ -353,6 +354,8 @@ export default function NormalUserDashboard({ user, onLogout }) {
           }}
         />
       ))}
+      
+      <Footer />
     </div>
   )
 }

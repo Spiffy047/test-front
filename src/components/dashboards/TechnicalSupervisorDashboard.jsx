@@ -345,8 +345,10 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
         {activeTab === 'analytics' && (
           <div className="space-y-6">
             <RealtimeSLADashboard onCardClick={setModalData} />
-            <AgentPerformanceScorecard />
-            <TicketAgingAnalysis />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <AgentPerformanceScorecard />
+              <TicketAgingAnalysis />
+            </div>
           </div>
         )}
 

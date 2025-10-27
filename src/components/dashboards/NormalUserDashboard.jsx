@@ -32,7 +32,8 @@ export default function NormalUserDashboard({ user, onLogout }) {
     const formData = new FormData(e.target)
     
     try {
-      const response = await fetch(`${API_URL}/tickets`, {
+      // Create ticket first
+      const ticketResponse = await fetch(`${API_URL}/tickets`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -44,7 +45,29 @@ export default function NormalUserDashboard({ user, onLogout }) {
         })
       })
 
-      if (response.ok) {
+      if (ticketResponse.ok) {
+        const newTicket = await ticketResponse.json()
+        
+        // Handle file uploads if any
+        const fileInput = e.target.querySelector('input[type="file"]')
+        if (fileInput && fileInput.files.length > 0) {
+          for (let file of fileInput.files) {
+            const uploadFormData = new FormData()
+            uploadFormData.append('file', file)
+            uploadFormData.append('ticket_id', newTicket.id)
+            uploadFormData.append('uploaded_by', user.id)
+            
+            try {
+              await fetch(`${API_URL}/files/upload`, {
+                method: 'POST',
+                body: uploadFormData
+              })
+            } catch (uploadErr) {
+              console.error('Failed to upload file:', uploadErr)
+            }
+          }
+        }
+        
         setShowCreateModal(false)
         fetchTickets()
         e.target.reset()
@@ -267,6 +290,21 @@ export default function NormalUserDashboard({ user, onLogout }) {
                       <option value="Other">Other</option>
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Attachments (Optional)
+                  </label>
+                  <input
+                    type="file"
+                    multiple
+                    className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    accept=".jpg,.jpeg,.png,.pdf,.doc,.docx,.txt"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    Supported formats: JPG, PNG, PDF, DOC, DOCX, TXT (Max 10MB each)
+                  </p>
                 </div>
 
                 <div className="bg-blue-50 border border-blue-200 rounded-md p-4 text-sm text-blue-800">

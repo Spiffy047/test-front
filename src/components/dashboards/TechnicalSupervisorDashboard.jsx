@@ -7,7 +7,7 @@ import RealtimeSLADashboard from '../analytics/RealtimeSLADashboard'
 import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import DataModal from '../common/DataModal'
 
-const API_URL = 'http://localhost:5002/api'
+const API_URL = 'https://hotfix.onrender.com/api'
 
 export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   const [tickets, setTickets] = useState([])

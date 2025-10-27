@@ -6,7 +6,7 @@ import AgentPerformanceCard from '../analytics/AgentPerformanceCard'
 import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
 
-const API_URL = 'http://localhost:5002/api'
+const API_URL = 'https://hotfix.onrender.com/api'
 
 export default function TechnicalUserDashboard({ user, onLogout }) {
   // State management

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import SLAAdherenceCard from '../analytics/SLAAdherenceCard'
 import AgentPerformanceScorecard from '../analytics/AgentPerformanceScorecard'
 
-const API_URL = 'http://localhost:5002/api'
+const API_URL = 'https://hotfix.onrender.com/api'
 
 export default function SystemAdminDashboard({ user, onLogout }) {
   const [users, setUsers] = useState([])

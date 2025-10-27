@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 
-const API_URL = 'http://localhost:5002/api'
+const API_URL = 'https://hotfix.onrender.com/api'
 
 export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpdate }) {
   const [messages, setMessages] = useState([])
@@ -200,7 +200,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                 {attachments.map(att => (
                   <a
                     key={att.id}
-                    href={`http://localhost:5002${att.download_url}`}
+                    href={`https://hotfix.onrender.com${att.download_url}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm flex items-center gap-2"

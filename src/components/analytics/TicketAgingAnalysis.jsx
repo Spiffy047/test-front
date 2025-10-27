@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { calculateHoursOpen, formatHoursOpen } from '../../utils/ticketUtils'
 
-const API_URL = 'http://localhost:5002/api'
+const API_URL = 'https://hotfix.onrender.com/api'
 
 export default function TicketAgingAnalysis() {
   const [agingData, setAgingData] = useState({})

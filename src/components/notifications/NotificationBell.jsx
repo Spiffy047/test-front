@@ -1,7 +1,7 @@
 // Notification bell component with dropdown alerts
 import { useState, useEffect } from 'react'
 
-const API_URL = 'http://localhost:5002/api'
+const API_URL = 'https://hotfix.onrender.com/api'
 
 export default function NotificationBell({ user }) {
   const [alerts, setAlerts] = useState([])  // Recent alerts list

@@ -4,7 +4,7 @@ import TechnicalUserDashboard from './components/dashboards/TechnicalUserDashboa
 import TechnicalSupervisorDashboard from './components/dashboards/TechnicalSupervisorDashboard'
 import SystemAdminDashboard from './components/dashboards/SystemAdminDashboard'
 
-const API_URL = 'http://localhost:5002/api'
+const API_URL = 'https://hotfix.onrender.com/api'
 
 function App() {
   const [user, setUser] = useState(null)

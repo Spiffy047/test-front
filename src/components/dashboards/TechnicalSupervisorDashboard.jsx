@@ -92,7 +92,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center">
@@ -114,7 +114,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
+      <main className="flex-1 max-w-6xl mx-auto px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '76rem'}}>
         <div className="mb-6">
           <input
             type="text"

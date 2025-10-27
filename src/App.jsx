@@ -25,21 +25,17 @@ function App() {
         body: JSON.stringify({ email, password })
       })
 
-      if (!response.ok) {
-        if (response.status === 502) {
-          throw new Error('Backend service is temporarily unavailable. Please try again in a few minutes.')
-        }
-        throw new Error('Login failed')
-      }
-
       const data = await response.json()
-      if (data.success) {
+      console.log('Login response:', data) // Debug log
+      
+      if (response.ok && data.success) {
         setUser(data.user)
         localStorage.setItem('token', data.token)
       } else {
-        throw new Error(data.message || 'Login failed')
+        throw new Error(data.message || 'Invalid email or password')
       }
     } catch (err) {
+      console.error('Login error:', err) // Debug log
       if (err.name === 'TypeError' && err.message.includes('fetch')) {
         setError('Cannot connect to server. Please check your internet connection or try again later.')
       } else {
@@ -106,16 +102,7 @@ function App() {
             </button>
           </form>
 
-          <div className="mt-6 p-4 bg-gray-50 rounded-md">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Demo Accounts:</h3>
-            <div className="text-xs text-gray-600 space-y-1">
-              <div>Normal User: john.smith@company.com</div>
-              <div>Technical User: maria.garcia@company.com</div>
-              <div>Supervisor: robert.chen@company.com</div>
-              <div>Admin: admin@company.com</div>
-              <div className="text-gray-500 mt-1">Password: any value</div>
-            </div>
-          </div>
+
         </div>
       </div>
     )

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 
 const API_URL = 'https://hotfix.onrender.com/api'
 
-export default function NotificationBell({ user }) {
+export default function NotificationBell({ user, onNotificationClick }) {
   const [alerts, setAlerts] = useState([])  // Recent alerts list
   const [unreadCount, setUnreadCount] = useState(0)  // Badge counter
   const [showDropdown, setShowDropdown] = useState(false)  // Dropdown visibility
@@ -133,7 +133,13 @@ export default function NotificationBell({ user }) {
                   className={`p-4 border-b hover:bg-gray-50 cursor-pointer ${
                     !alert.is_read ? 'bg-blue-50' : ''
                   }`}
-                  onClick={() => !alert.is_read && markAsRead(alert.id)}
+                  onClick={() => {
+                    if (!alert.is_read) markAsRead(alert.id)
+                    if (onNotificationClick && alert.ticket_id) {
+                      onNotificationClick(alert.ticket_id, alert.alert_type)
+                    }
+                    setShowDropdown(false)
+                  }}
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-lg">{getAlertIcon(alert.alert_type)}</span>

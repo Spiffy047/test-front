@@ -24,6 +24,20 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
     fetchAgentWorkload()
   }, [])
 
+  const handleNotificationClick = async (ticketId, alertType) => {
+    try {
+      const response = await fetch(`${API_URL}/tickets`)
+      const data = await response.json()
+      const tickets = data.tickets || data || []
+      const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
+      if (ticket) {
+        setSelectedTicket(ticket)
+      }
+    } catch (err) {
+      console.error('Failed to find ticket:', err)
+    }
+  }
+
   // Fetch all tickets from API
   const fetchTickets = async () => {
     try {
@@ -168,7 +182,7 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">Hotfix ServiceDesk - Agent Portal</h1>
             <div className="flex items-center gap-4">
-              <NotificationBell user={user} />
+              <NotificationBell user={user} onNotificationClick={handleNotificationClick} />
               <div className="text-sm">
                 <span className="text-gray-600">Welcome, </span>
                 <span className="font-medium">{user.name}</span>

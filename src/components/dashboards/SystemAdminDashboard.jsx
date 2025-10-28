@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import SLAAdherenceCard from '../analytics/SLAAdherenceCard'
 import AgentPerformanceScorecard from '../analytics/AgentPerformanceScorecard'
 import UserForm from '../forms/UserForm'
+import NotificationBell from '../notifications/NotificationBell'
+import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import Footer from '../common/Footer'
 
 
@@ -13,10 +15,25 @@ export default function SystemAdminDashboard({ user, onLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard')
   const [showUserModal, setShowUserModal] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
+  const [selectedTicket, setSelectedTicket] = useState(null)
 
   useEffect(() => {
     fetchUsers()
   }, [])
+
+  const handleNotificationClick = async (ticketId, alertType) => {
+    try {
+      const response = await fetch(`${API_URL}/tickets`)
+      const data = await response.json()
+      const tickets = data.tickets || data || []
+      const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
+      if (ticket) {
+        setSelectedTicket(ticket)
+      }
+    } catch (err) {
+      console.error('Failed to find ticket:', err)
+    }
+  }
 
   const fetchUsers = async () => {
     try {
@@ -90,6 +107,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">Hotfix ServiceDesk - Admin Portal</h1>
             <div className="flex items-center gap-4">
+              <NotificationBell user={user} onNotificationClick={handleNotificationClick} />
               <div className="text-sm">
                 <span className="text-gray-600">Welcome, </span>
                 <span className="font-medium">{user.name}</span>
@@ -299,6 +317,15 @@ export default function SystemAdminDashboard({ user, onLogout }) {
             </div>
           </div>
         </div>
+      )}
+
+      {selectedTicket && (
+        <TicketDetailDialog
+          ticket={selectedTicket}
+          currentUser={user}
+          onClose={() => setSelectedTicket(null)}
+          onUpdate={() => {}}
+        />
       )}
       
       <Footer />

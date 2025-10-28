@@ -59,6 +59,15 @@ function App() {
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-gray-900">Hotfix</h1>
             <p className="text-gray-600 mt-2">Sign in to your account</p>
+            
+            <div className="mt-4 p-3 bg-blue-50 rounded-md text-left">
+              <p className="text-xs font-medium text-blue-800 mb-2">Demo Credentials:</p>
+              <div className="text-xs text-blue-700 space-y-1">
+                <div><strong>Admin:</strong> admin@company.com / password123</div>
+                <div><strong>User:</strong> john.smith@company.com / password123</div>
+                <div><strong>Tech:</strong> sarah.johnson@company.com / password123</div>
+              </div>
+            </div>
           </div>
           
           <form onSubmit={handleSubmit(handleLogin)} className="space-y-4">

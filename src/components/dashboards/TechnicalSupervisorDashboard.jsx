@@ -375,9 +375,6 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
               </div>
             </div>
           } />
-
-        {modalData && <DataModal title={modalData.title} data={modalData.data} onClose={() => setModalData(null)} />}
-
           <Route path="/tickets" element={
             <div className="space-y-4">
               <div className="flex justify-end">
@@ -451,6 +448,8 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
           } />
         </Routes>
       </main>
+
+      {modalData && <DataModal title={modalData.title} data={modalData.data} onClose={() => setModalData(null)} />}
 
       {selectedTicket && (
         <TicketDetailDialog

@@ -1,58 +1,88 @@
+// Import React hooks for state management
 import { useState } from 'react'
+// Import React Router components for client-side routing
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+// Import React Hook Form for form validation and handling
 import { useForm } from 'react-hook-form'
+// Import role-specific dashboard components
 import NormalUserDashboard from './components/dashboards/NormalUserDashboard'
 import TechnicalUserDashboard from './components/dashboards/TechnicalUserDashboard'
 import TechnicalSupervisorDashboard from './components/dashboards/TechnicalSupervisorDashboard'
 import SystemAdminDashboard from './components/dashboards/SystemAdminDashboard'
+// Import email verification component for 2-step authentication
 import EmailVerification from './components/auth/EmailVerification'
 
-
+// Backend API base URL for all API calls
 const API_URL = 'https://hotfix.onrender.com/api'
 
+/**
+ * Main App Component
+ * Handles authentication, routing, and role-based dashboard rendering
+ * Shows login form when user is not authenticated, otherwise shows appropriate dashboard
+ */
 function App() {
+  // State to store authenticated user data (null when not logged in)
   const [user, setUser] = useState(null)
+  // State to store login error messages
   const [error, setError] = useState('')
+  // State to track login loading status
   const [loading, setLoading] = useState(false)
   
-
-  
+  // React Hook Form setup for login form validation and handling
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
 
+  /**
+   * Handle user login authentication
+   * @param {Object} formData - Form data containing email and password
+   */
   const handleLogin = async (formData) => {
+    // Set loading state and clear any previous errors
     setLoading(true)
     setError('')
 
     try {
+      // Make API call to authenticate user
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData) // Send email and password as JSON
       })
 
+      // Parse JSON response from server
       const responseData = await response.json()
       
+      // Check if login was successful
       if (response.ok && (responseData.success || responseData.access_token)) {
+        // Store user data in state and JWT token in localStorage
         setUser(responseData.user)
         localStorage.setItem('token', responseData.access_token || responseData.token)
       } else {
+        // Throw error with server message or default message
         throw new Error(responseData.message || 'Invalid email or password')
       }
     } catch (err) {
+      // Handle different types of errors
       if (err.name === 'TypeError' && err.message.includes('fetch')) {
+        // Network/connection error
         setError('Cannot connect to server. Please check your internet connection or try again later.')
       } else {
+        // Authentication or other errors
         setError(err.message || 'Login failed')
       }
     } finally {
+      // Always clear loading state when done
       setLoading(false)
     }
   }
 
+  /**
+   * Handle user logout
+   * Clears user state, resets form, and removes JWT token
+   */
   const handleLogout = () => {
-    setUser(null)
-    reset()
-    localStorage.removeItem('token')
+    setUser(null) // Clear user data
+    reset() // Reset login form
+    localStorage.removeItem('token') // Remove JWT token
   }
 
   if (!user) {

@@ -1,37 +1,64 @@
 import { useEffect, useState } from 'react'
 import { API_CONFIG } from '../../config/api'
+import { getPerformanceRatingStyles } from '../../utils/styleHelpers'
 
 const API_URL = API_CONFIG.BASE_URL
 
 export default function AgentPerformanceCard({ agentId, onCardClick, tickets }) {
   const [performance, setPerformance] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!agentId) return
     
     const fetchPerformance = async () => {
       try {
+        setLoading(true)
+        setError(null)
         const res = await fetch(`${API_URL}/analytics/agent-performance-detailed`)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        if (!res.ok) throw new Error(`Failed to load performance data (${res.status})`)
         const data = await res.json()
         const agentData = Array.isArray(data) ? data.find(a => a?.agent_id === agentId) : null
         setPerformance(agentData || null)
       } catch (error) {
         console.error('Failed to fetch performance data:', error)
+        setError(error.message || 'Failed to load performance data')
         setPerformance(null)
+      } finally {
+        setLoading(false)
       }
     }
     
     fetchPerformance()
   }, [agentId])
 
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">My Performance</h3>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-gray-500">Loading performance data...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">My Performance</h3>
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="text-red-800 font-medium">Error Loading Data</div>
+          <div className="text-red-600 text-sm mt-1">{error}</div>
+        </div>
+      </div>
+    )
+  }
+
   if (!performance) return null
 
-  const ratingColor = 
-    performance?.performance_rating === 'Excellent' ? 'text-green-600 bg-green-50' :
-    performance?.performance_rating === 'Good' ? 'text-blue-600 bg-blue-50' :
-    performance?.performance_rating === 'Average' ? 'text-yellow-600 bg-yellow-50' :
-    'text-red-600 bg-red-50'
+  const ratingStyles = getPerformanceRatingStyles(performance?.performance_rating)
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -56,7 +83,7 @@ export default function AgentPerformanceCard({ agentId, onCardClick, tickets }) 
         </div>
       </div>
 
-      <div className={`p-4 rounded-lg ${ratingColor}`}>
+      <div className={`p-4 rounded-lg ${ratingStyles}`}>
         <div className="text-center">
           <div className="text-sm font-medium mb-1">Performance Rating</div>
           <div className="text-2xl font-bold">{performance?.performance_rating || 'Unknown'}</div>

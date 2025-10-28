@@ -55,20 +55,24 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
   const fetchAgents = async () => {
     try {
       const response = await fetch(`${API_URL}/agents`)
+      if (!response.ok) throw new Error(`Failed to load agents (${response.status})`)
       const data = await response.json()
       setAgents(data || [])
     } catch (err) {
       console.error('Failed to fetch agents:', err)
+      setAgents([])
     }
   }
 
   const fetchAttachments = async () => {
     try {
       const response = await fetch(`${API_URL}/files/ticket/${ticket.id}`)
+      if (!response.ok) throw new Error(`Failed to load attachments (${response.status})`)
       const data = await response.json()
       setAttachments(data || [])
     } catch (err) {
       console.error('Failed to fetch attachments:', err)
+      setAttachments([])
     }
   }
 
@@ -96,7 +100,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
           body: formData
         })
         
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        if (!response.ok) throw new Error(`Image upload failed (${response.status})`)
         const result = await response.json()
         if (result.success) {
           // Add image message to timeline
@@ -116,11 +120,12 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
               image_url: result.url
             })
           })
-          if (!msgResponse.ok) throw new Error(`HTTP ${msgResponse.status}`)
+          if (!msgResponse.ok) throw new Error(`Message posting failed (${msgResponse.status})`)
           fetchMessages()
         }
       } catch (err) {
         console.error('Failed to upload image:', err)
+        alert(`Failed to upload image: ${err.message}`)
       }
     } else {
       // Regular file upload
@@ -138,10 +143,12 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
           credentials: 'same-origin',
           body: formData
         })
-        if (!response.ok) throw new Error(`HTTP ${response.status}`)
+        if (!response.ok) throw new Error(`File upload failed (${response.status})`)
         fetchAttachments()
+        alert('File uploaded successfully!')
       } catch (err) {
         console.error('Failed to upload file:', err)
+        alert(`Failed to upload file: ${err.message}`)
       }
     }
     
@@ -174,9 +181,12 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
       if (response.ok) {
         setNewMessage('')
         await fetchMessages()
+      } else {
+        throw new Error(`Message sending failed (${response.status})`)
       }
     } catch (err) {
       console.error('Failed to send message:', err)
+      alert(`Failed to send message: ${err.message}`)
     }
   }
 
@@ -199,8 +209,10 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
       setIsEditing(false)
       onUpdate()
       fetchActivities()
+      alert('Ticket updated successfully!')
     } catch (err) {
       console.error('Failed to update ticket:', err)
+      alert(`Failed to update ticket: ${err.message}`)
     }
   }
 

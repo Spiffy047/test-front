@@ -7,6 +7,7 @@ import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
 import Footer from '../common/Footer'
 import { API_CONFIG } from '../../config/api'
+import { getPriorityStyles, getStatusStyles } from '../../utils/styleHelpers'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -85,7 +86,7 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
   const fetchAgentWorkload = async () => {
     try {
       const response = await fetch(`${API_URL}/analytics/agent-workload`)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) throw new Error(`Failed to load agent workload (${response.status})`)
       const data = await response.json()
       setAgentWorkload(data)
     } catch (err) {
@@ -111,10 +112,12 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           performed_by_name: user.name
         })
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) throw new Error(`Status update failed (${response.status})`)
       fetchTickets()
+      alert('Ticket status updated successfully!')
     } catch (err) {
       console.error('Failed to update ticket:', err)
+      alert(`Failed to update ticket: ${err.message}`)
     }
   }
 
@@ -135,11 +138,13 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           performed_by_name: user.name
         })
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) throw new Error(`Assignment failed (${response.status})`)
       fetchTickets()
       fetchAgentWorkload()
+      alert('Ticket assigned successfully!')
     } catch (err) {
       console.error('Failed to assign ticket:', err)
+      alert(`Failed to assign ticket: ${err.message}`)
     }
   }
 
@@ -380,20 +385,10 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
                           SLA Violated
                         </span>
                       )}
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        ticket.status === 'Closed' ? 'bg-gray-100 text-gray-800' :
-                        ticket.status === 'Open' ? 'bg-green-100 text-green-800' :
-                        ticket.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(ticket.status)}`}>
                         {ticket.status}
                       </span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        ticket.priority === 'Critical' ? 'bg-red-100 text-red-800' :
-                        ticket.priority === 'High' ? 'bg-orange-100 text-orange-800' :
-                        ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityStyles(ticket.priority)}`}>
                         {ticket.priority}
                       </span>
                     </div>

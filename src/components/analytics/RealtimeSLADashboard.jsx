@@ -8,6 +8,8 @@ export default function RealtimeSLADashboard({ onCardClick }) {
   const [slaData, setSlaData] = useState(null)
   const [lastUpdate, setLastUpdate] = useState(null)
   const [allTickets, setAllTickets] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     fetchSLAData()
@@ -17,13 +19,15 @@ export default function RealtimeSLADashboard({ onCardClick }) {
 
   const fetchSLAData = async () => {
     try {
+      setLoading(true)
+      setError(null)
       const [slaResponse, ticketsResponse] = await Promise.all([
         fetch(`${API_BASE_URL}/sla/realtime-adherence`),
         fetch(`${API_BASE_URL}/tickets`)
       ])
       
-      if (!slaResponse.ok) throw new Error(`SLA API: HTTP ${slaResponse.status}`)
-      if (!ticketsResponse.ok) throw new Error(`Tickets API: HTTP ${ticketsResponse.status}`)
+      if (!slaResponse.ok) throw new Error(`Failed to load SLA data (${slaResponse.status})`)
+      if (!ticketsResponse.ok) throw new Error(`Failed to load tickets (${ticketsResponse.status})`)
       
       const data = await slaResponse.json()
       const tickets = await ticketsResponse.json()
@@ -32,12 +36,45 @@ export default function RealtimeSLADashboard({ onCardClick }) {
       setLastUpdate(new Date())
     } catch (err) {
       console.error('Failed to fetch SLA data:', err)
+      setError(err.message || 'Failed to load SLA dashboard data')
       setSlaData(null)
       setAllTickets([])
+    } finally {
+      setLoading(false)
     }
   }
 
-  if (!slaData) return <div className="bg-white rounded-lg shadow p-6">Loading...</div>
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">Real-Time SLA Adherence</h3>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-gray-500">Loading SLA dashboard...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">Real-Time SLA Adherence</h3>
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="text-red-800 font-medium">Error Loading Dashboard</div>
+          <div className="text-red-600 text-sm mt-1">{error}</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!slaData) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">Real-Time SLA Adherence</h3>
+        <div className="text-center text-gray-500 py-8">No SLA data available</div>
+      </div>
+    )
+  }
 
   const priorityChartData = slaData?.priority_breakdown ? Object.entries(slaData.priority_breakdown).map(([priority, data]) => ({
     priority,

@@ -1,25 +1,35 @@
+import { getPriorityStyles, getStatusStyles } from '../../utils/styleHelpers'
+
+const ModalHeader = ({ title, onClose }) => (
+  <div className="flex justify-between items-center p-6 border-b">
+    <h2 className="text-xl font-bold">{title}</h2>
+    <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+  </div>
+)
+
+const EmptyState = () => (
+  <div className="p-6 text-center text-gray-500">No data available</div>
+)
+
 export default function DataModal({ title, data, onClose }) {
+  const modalClasses = "bg-white rounded-lg shadow-xl w-full max-h-[80vh] overflow-hidden"
+  const overlayClasses = "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+  
   if (!data) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
-        <div className="bg-white rounded-lg shadow-xl w-full max-h-[80vh] overflow-hidden" style={{maxWidth: '76rem'}} onClick={e => e.stopPropagation()}>
-          <div className="flex justify-between items-center p-6 border-b">
-            <h2 className="text-xl font-bold">{title}</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-          </div>
-          <div className="p-6 text-center text-gray-500">No data available</div>
+      <div className={overlayClasses} onClick={onClose}>
+        <div className={modalClasses} style={{maxWidth: '76rem'}} onClick={e => e.stopPropagation()}>
+          <ModalHeader title={title} onClose={onClose} />
+          <EmptyState />
         </div>
       </div>
     )
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-white rounded-lg shadow-xl w-full max-h-[80vh] overflow-hidden" style={{maxWidth: '76rem'}} onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center p-6 border-b">
-          <h2 className="text-xl font-bold">{title}</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-        </div>
+    <div className={overlayClasses} onClick={onClose}>
+      <div className={modalClasses} style={{maxWidth: '76rem'}} onClick={e => e.stopPropagation()}>
+        <ModalHeader title={title} onClose={onClose}
         <div className="p-6 overflow-y-auto max-h-[calc(80vh-80px)]">
           {!Array.isArray(data) || data.length === 0 ? (
             <div className="text-center text-gray-500 py-8">No data available</div>
@@ -31,20 +41,14 @@ export default function DataModal({ title, data, onClose }) {
                     <div className="font-semibold text-lg">{item.id || item.title}</div>
                     <div className="flex gap-2">
                       {item.status && (
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          item.status === 'Closed' ? 'bg-gray-100 text-gray-800' :
-                          item.status === 'Open' ? 'bg-green-100 text-green-800' :
-                          item.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-blue-100 text-blue-800'
-                        }`}>{item.status}</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusStyles(item.status)}`}>
+                          {item.status}
+                        </span>
                       )}
                       {item.priority && (
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          item.priority === 'Critical' ? 'bg-red-100 text-red-800' :
-                          item.priority === 'High' ? 'bg-orange-100 text-orange-800' :
-                          item.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>{item.priority}</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityStyles(item.priority)}`}>
+                          {item.priority}
+                        </span>
                       )}
                     </div>
                   </div>

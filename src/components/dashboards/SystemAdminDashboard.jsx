@@ -6,6 +6,7 @@ import NotificationBell from '../notifications/NotificationBell'
 import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import Footer from '../common/Footer'
 import { API_CONFIG } from '../../config/api'
+import { getRoleStyles } from '../../utils/styleHelpers'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -339,12 +340,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
                       <td className="px-6 py-4 whitespace-nowrap">{u.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap">{u.email}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          u.role === 'System Admin' ? 'bg-purple-100 text-purple-800' :
-                          u.role === 'Technical Supervisor' ? 'bg-blue-100 text-blue-800' :
-                          u.role === 'Technical User' ? 'bg-green-100 text-green-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getRoleStyles(u.role)}`}>
                           {u.role}
                         </span>
                       </td>

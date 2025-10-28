@@ -31,6 +31,7 @@ export default function UserForm({ user, onSubmit, onCancel }) {
       onSubmit(data)
     } catch (error) {
       console.error('Form submission error:', error)
+      alert(`Form submission failed: ${error.message}`)
     }
   }
 

@@ -1,22 +1,30 @@
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { API_CONFIG } from '../../config/api'
+import { getPriorityStyles } from '../../utils/styleHelpers'
 
 const API_URL = API_CONFIG.BASE_URL
 
 export default function TicketAgingAnalysis() {
   const [agingData, setAgingData] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchAgingData = async () => {
       try {
+        setLoading(true)
+        setError(null)
         const res = await fetch(`${API_URL}/analytics/ticket-aging`)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        if (!res.ok) throw new Error(`Failed to load aging data (${res.status})`)
         const data = await res.json()
         setAgingData(data || {})
       } catch (error) {
         console.error('Failed to fetch aging data:', error)
+        setError(error.message || 'Failed to load aging data')
         setAgingData({})
+      } finally {
+        setLoading(false)
       }
     }
     fetchAgingData()
@@ -24,6 +32,29 @@ export default function TicketAgingAnalysis() {
 
   const chartData = Array.isArray(agingData?.aging_data) ? agingData.aging_data : []
   const hasData = Array.isArray(chartData) && chartData.some(item => (item?.count || 0) > 0)
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">Ticket Aging Analysis</h3>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-gray-500">Loading aging data...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">Ticket Aging Analysis</h3>
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="text-red-800 font-medium">Error Loading Data</div>
+          <div className="text-red-600 text-sm mt-1">{error}</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-white rounded-lg shadow p-6">
@@ -65,12 +96,7 @@ export default function TicketAgingAnalysis() {
                         <span className="text-gray-600 ml-2">{ticket?.title || 'No title'}</span>
                       </div>
                       <div className="flex gap-2">
-                        <span className={`px-2 py-1 rounded text-xs font-medium ${
-                          ticket?.priority === 'Critical' ? 'bg-red-100 text-red-800' :
-                          ticket?.priority === 'High' ? 'bg-orange-100 text-orange-800' :
-                          ticket?.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getPriorityStyles(ticket?.priority)}`}>
                           {ticket?.priority || 'Unknown'}
                         </span>
                         {ticket?.sla_violated && (

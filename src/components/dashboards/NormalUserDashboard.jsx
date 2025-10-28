@@ -5,6 +5,7 @@ import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
 import Footer from '../common/Footer'
 import { API_CONFIG } from '../../config/api'
+import { getPriorityStyles, getStatusStyles } from '../../utils/styleHelpers'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -42,15 +43,18 @@ export default function NormalUserDashboard({ user, onLogout }) {
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
       const response = await fetch(`${API_URL}/tickets`)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) throw new Error(`Failed to load ticket (${response.status})`)
       const data = await response.json()
       const tickets = data.tickets || data || []
       const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
       if (ticket) {
         setSelectedTicket(ticket)
+      } else {
+        alert('Ticket not found')
       }
     } catch (err) {
       console.error('Failed to find ticket:', err)
+      alert('Failed to load ticket details')
     }
   }
 
@@ -130,9 +134,10 @@ export default function NormalUserDashboard({ user, onLogout }) {
                 credentials: 'same-origin',
                 body: uploadFormData
               })
-              if (!uploadResponse.ok) throw new Error(`HTTP ${uploadResponse.status}`)
+              if (!uploadResponse.ok) throw new Error(`File upload failed (${uploadResponse.status})`)
             } catch (uploadErr) {
               console.error('Failed to upload file:', uploadErr)
+              alert(`Failed to upload ${file.name}: ${uploadErr.message}`)
             }
           }
         }
@@ -140,9 +145,11 @@ export default function NormalUserDashboard({ user, onLogout }) {
         setShowCreateModal(false)
         fetchTickets()
         e.target.reset()
+        alert('Ticket created successfully!')
       }
     } catch (err) {
       console.error('Failed to create ticket:', err)
+      alert(`Failed to create ticket: ${err.message}`)
     }
   }
 
@@ -231,20 +238,10 @@ export default function NormalUserDashboard({ user, onLogout }) {
                     <p className="text-sm text-gray-600 mt-1">{ticket.id}</p>
                   </div>
                   <div className="flex gap-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      ticket.status === 'Closed' ? 'bg-gray-100 text-gray-800' :
-                      ticket.status === 'Open' ? 'bg-green-100 text-green-800' :
-                      ticket.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-blue-100 text-blue-800'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusStyles(ticket.status)}`}>
                       {ticket.status}
                     </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                      ticket.priority === 'Critical' ? 'bg-red-100 text-red-800' :
-                      ticket.priority === 'High' ? 'bg-orange-100 text-orange-800' :
-                      ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityStyles(ticket.priority)}`}>
                       {ticket.priority}
                     </span>
                   </div>

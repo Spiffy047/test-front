@@ -52,15 +52,18 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
       const response = await fetch(`${API_URL}/tickets`)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      if (!response.ok) throw new Error(`Failed to load ticket (${response.status})`)
       const data = await response.json()
       const tickets = data.tickets || data || []
       const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
       if (ticket) {
         setSelectedTicket(ticket)
+      } else {
+        alert('Ticket not found')
       }
     } catch (err) {
       console.error('Failed to find ticket:', err)
+      alert('Failed to load ticket details')
     }
   }
 

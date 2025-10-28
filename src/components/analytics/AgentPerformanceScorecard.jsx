@@ -1,6 +1,7 @@
 // Import React hooks for state management and lifecycle
 import { useEffect, useState } from 'react'
 import { API_CONFIG } from '../../config/api'
+import { getPerformanceRatingStyles } from '../../utils/styleHelpers'
 
 // API base URL for backend communication
 const API_URL = API_CONFIG.BASE_URL
@@ -13,35 +14,53 @@ const API_URL = API_CONFIG.BASE_URL
 export default function AgentPerformanceScorecard() {
   // State to store array of agent performance data
   const [agents, setAgents] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   // Fetch agent performance data on component mount
   useEffect(() => {
     const fetchAgentData = async () => {
       try {
+        setLoading(true)
+        setError(null)
         const res = await fetch(`${API_URL}/analytics/agent-performance-detailed`)
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        if (!res.ok) throw new Error(`Failed to load agent data (${res.status})`)
         const data = await res.json()
         setAgents(Array.isArray(data) ? data : [])
       } catch (error) {
         console.error('Failed to fetch agent performance data:', error)
+        setError(error.message || 'Failed to load agent performance data')
         setAgents([])
+      } finally {
+        setLoading(false)
       }
     }
     fetchAgentData()
   }, []) // Empty dependency array - runs only once on mount
 
-  /**
-   * Get Tailwind CSS classes for performance rating badge colors
-   * @param {string} rating - Performance rating (Excellent, Good, Average, etc.)
-   * @returns {string} Tailwind CSS classes for background and text color
-   */
-  const getRatingColor = (rating) => {
-    switch(rating) {
-      case 'Excellent': return 'bg-green-100 text-green-800' // Green for excellent
-      case 'Good': return 'bg-blue-100 text-blue-800' // Blue for good
-      case 'Average': return 'bg-yellow-100 text-yellow-800' // Yellow for average
-      default: return 'bg-red-100 text-red-800' // Red for poor performance
-    }
+
+
+  if (loading) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">Agent Performance Scorecard</h3>
+        <div className="flex items-center justify-center py-8">
+          <div className="text-gray-500">Loading agent performance data...</div>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold mb-4">Agent Performance Scorecard</h3>
+        <div className="bg-red-50 border border-red-200 rounded-md p-4">
+          <div className="text-red-800 font-medium">Error Loading Data</div>
+          <div className="text-red-600 text-sm mt-1">{error}</div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -64,7 +83,7 @@ export default function AgentPerformanceScorecard() {
                 <p className="text-sm text-gray-600">{agent?.email || 'No email'}</p>
               </div>
               {/* Performance rating badge with dynamic color */}
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getRatingColor(agent?.performance_rating)}`}>
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPerformanceRatingStyles(agent?.performance_rating)}`}>
                 {agent?.performance_rating || 'Unknown'}
               </span>
             </div>

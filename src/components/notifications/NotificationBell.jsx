@@ -25,6 +25,9 @@ export default function NotificationBell({ user, onNotificationClick }) {
     try {
       const response = await fetch(`${API_URL}/alerts/${user.id}`)
       if (!response.ok) {
+        if (response.status !== 404) {
+          console.warn(`Failed to load alerts: ${response.status}`)
+        }
         setAlerts([])
         return
       }
@@ -98,17 +101,16 @@ export default function NotificationBell({ user, onNotificationClick }) {
     }
   }
 
-  // Get appropriate icon for each alert type
-  const getAlertIcon = (alertType) => {
-    switch (alertType) {
-      case 'sla_violation': return   // SLA breach
-      case 'ticket_created': return   // New ticket
-      case 'assignment': return   // Ticket assigned
-      case 'status_change': return   // Status update
-      case 'new_message': return   // Chat message
-      default: return   // Generic notification
-    }
+  // Alert type to icon mapping
+  const ALERT_ICONS = {
+    'sla_violation': '⚠️',
+    'ticket_created': '🎫', 
+    'assignment': '👤',
+    'status_change': '🔄',
+    'new_message': '💬'
   }
+  
+  const getAlertIcon = (alertType) => ALERT_ICONS[alertType] || '🔔'
 
   return (
     <div className="relative">
@@ -161,7 +163,9 @@ export default function NotificationBell({ user, onNotificationClick }) {
                   }}
                 >
                   <div className="flex items-start gap-3">
-                    <span className="text-lg">{getAlertIcon(alert.alert_type)}</span>
+                    <span className="text-lg" role="img" aria-label={alert.alert_type}>
+                      {getAlertIcon(alert.alert_type)}
+                    </span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-sm text-gray-900 truncate">

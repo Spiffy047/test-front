@@ -1,5 +1,32 @@
 import { useState, useEffect } from 'react'
 
+// Notification type configurations
+const NOTIFICATION_CONFIGS = {
+  'sla_breach': {
+    style: 'bg-red-500 border-red-600',
+    icon: '!'
+  },
+  'ticket_assigned': {
+    style: 'bg-blue-500 border-blue-600', 
+    icon: 'A'
+  },
+  'ticket_updated': {
+    style: 'bg-green-500 border-green-600',
+    icon: 'U'
+  },
+  'new_ticket': {
+    style: 'bg-purple-500 border-purple-600',
+    icon: 'N'
+  },
+  'default': {
+    style: 'bg-gray-500 border-gray-600',
+    icon: 'i'
+  }
+}
+
+const AUTO_CLOSE_DELAY = 5000
+const FADE_OUT_DELAY = 300
+
 export default function ToastNotification({ notification, onClose }) {
   const [isVisible, setIsVisible] = useState(true)
 
@@ -8,35 +35,14 @@ export default function ToastNotification({ notification, onClose }) {
     
     const timer = setTimeout(() => {
       setIsVisible(false)
-      setTimeout(onClose, 300)
-    }, 5000)
+      setTimeout(onClose, FADE_OUT_DELAY)
+    }, AUTO_CLOSE_DELAY)
 
     return () => clearTimeout(timer)
   }, [onClose])
 
-  const getNotificationStyle = (type) => {
-    switch (type) {
-      case 'sla_breach':
-        return 'bg-red-500 border-red-600'
-      case 'ticket_assigned':
-        return 'bg-blue-500 border-blue-600'
-      case 'ticket_updated':
-        return 'bg-green-500 border-green-600'
-      case 'new_ticket':
-        return 'bg-purple-500 border-purple-600'
-      default:
-        return 'bg-gray-500 border-gray-600'
-    }
-  }
-
-  const getIcon = (type) => {
-    switch (type) {
-      case 'sla_breach': return '!'
-      case 'ticket_assigned': return 'A'
-      case 'ticket_updated': return 'U'
-      case 'new_ticket': return 'N'
-      default: return 'i'
-    }
+  const getNotificationConfig = (type) => {
+    return NOTIFICATION_CONFIGS[type] || NOTIFICATION_CONFIGS.default
   }
 
   if (!isVisible || !notification) return null
@@ -45,9 +51,9 @@ export default function ToastNotification({ notification, onClose }) {
     <div className={`fixed top-4 right-4 z-50 transform transition-all duration-300 ${
       isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
     }`}>
-      <div className={`${getNotificationStyle(notification?.type)} text-white p-4 rounded-lg shadow-lg border-l-4 max-w-sm`}>
+      <div className={`${getNotificationConfig(notification?.type).style} text-white p-4 rounded-lg shadow-lg border-l-4 max-w-sm`}>
         <div className="flex items-start gap-3">
-          <span className="text-lg">{getIcon(notification?.type)}</span>
+          <span className="text-lg">{getNotificationConfig(notification?.type).icon}</span>
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <h4 className="font-semibold text-sm">
@@ -56,7 +62,7 @@ export default function ToastNotification({ notification, onClose }) {
               <button
                 onClick={() => {
                   setIsVisible(false)
-                  if (onClose) setTimeout(onClose, 300)
+                  if (onClose) setTimeout(onClose, FADE_OUT_DELAY)
                 }}
                 className="text-white hover:text-gray-200 ml-2"
               >

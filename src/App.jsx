@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import NormalUserDashboard from './components/dashboards/NormalUserDashboard'
 import TechnicalUserDashboard from './components/dashboards/TechnicalUserDashboard'
@@ -127,19 +128,30 @@ function App() {
     )
   }
 
-  // Route to appropriate dashboard based on role
-  switch (user.role) {
-    case 'Normal User':
-      return <NormalUserDashboard user={user} onLogout={handleLogout} />
-    case 'Technical User':
-      return <TechnicalUserDashboard user={user} onLogout={handleLogout} />
-    case 'Technical Supervisor':
-      return <TechnicalSupervisorDashboard user={user} onLogout={handleLogout} />
-    case 'System Admin':
-      return <SystemAdminDashboard user={user} onLogout={handleLogout} />
-    default:
-      return <NormalUserDashboard user={user} onLogout={handleLogout} />
+  // Route to appropriate dashboard based on role with React Router
+  const getDashboardComponent = () => {
+    switch (user.role) {
+      case 'Normal User':
+        return <NormalUserDashboard user={user} onLogout={handleLogout} />
+      case 'Technical User':
+        return <TechnicalUserDashboard user={user} onLogout={handleLogout} />
+      case 'Technical Supervisor':
+        return <TechnicalSupervisorDashboard user={user} onLogout={handleLogout} />
+      case 'System Admin':
+        return <SystemAdminDashboard user={user} onLogout={handleLogout} />
+      default:
+        return <NormalUserDashboard user={user} onLogout={handleLogout} />
+    }
   }
+
+  return (
+    <Router>
+      <Routes>
+        <Route path="/dashboard/*" element={getDashboardComponent()} />
+        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      </Routes>
+    </Router>
+  )
 }
 
 export default App

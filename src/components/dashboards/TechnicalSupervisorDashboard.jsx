@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import SLAAdherenceCard from '../analytics/SLAAdherenceCard'
 import AgentPerformanceScorecard from '../analytics/AgentPerformanceScorecard'
@@ -7,6 +8,7 @@ import RealtimeSLADashboard from '../analytics/RealtimeSLADashboard'
 import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import DataModal from '../common/DataModal'
 import Footer from '../common/Footer'
+import Pagination from '../common/Pagination'
 
 
 
@@ -14,23 +16,33 @@ const API_URL = 'https://hotfix.onrender.com/api'
 
 export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   const [tickets, setTickets] = useState([])
-  const [activeTab, setActiveTab] = useState('dashboard')
   const [statusCounts, setStatusCounts] = useState({})
   const [unassignedTickets, setUnassignedTickets] = useState([])
   const [agentWorkload, setAgentWorkload] = useState([])
   const [selectedTicket, setSelectedTicket] = useState(null)
   const [modalData, setModalData] = useState(null)
+  const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0, has_next: false, has_prev: false })
+  const location = useLocation()
 
   useEffect(() => {
     fetchTickets()
     fetchAnalytics()
   }, [])
 
-  const fetchTickets = async () => {
+  const handlePageChange = (page) => {
+    fetchTickets(page)
+  }
+
+  const fetchTickets = async (page = 1) => {
     try {
-      const response = await fetch(`${API_URL}/tickets`)
+      const response = await fetch(`${API_URL}/tickets?page=${page}&per_page=10`)
       const data = await response.json()
-      setTickets(data)
+      if (data.tickets) {
+        setTickets(data.tickets)
+        setPagination(data.pagination)
+      } else {
+        setTickets(data)
+      }
     } catch (err) {
       console.error('Failed to fetch tickets:', err)
     }
@@ -166,29 +178,30 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
 
         <div className="mb-6 border-b border-gray-200">
           <nav className="flex gap-4">
-            <button
-              onClick={() => setActiveTab('dashboard')}
-              className={`px-4 py-2 font-medium ${activeTab === 'dashboard' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
+            <Link
+              to="/dashboard"
+              className={`px-4 py-2 font-medium ${location.pathname === '/dashboard' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
             >
               Dashboard
-            </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`px-4 py-2 font-medium ${activeTab === 'analytics' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
+            </Link>
+            <Link
+              to="/dashboard/analytics"
+              className={`px-4 py-2 font-medium ${location.pathname === '/dashboard/analytics' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
             >
               Analytics
-            </button>
-            <button
-              onClick={() => setActiveTab('allTickets')}
-              className={`px-4 py-2 font-medium ${activeTab === 'allTickets' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
+            </Link>
+            <Link
+              to="/dashboard/tickets"
+              className={`px-4 py-2 font-medium ${location.pathname === '/dashboard/tickets' ? 'border-b-2 border-blue-600 text-blue-600' : 'text-gray-600 hover:text-gray-900'}`}
             >
               All Tickets ({tickets.length})
-            </button>
+            </Link>
           </nav>
         </div>
 
-        {activeTab === 'dashboard' && (
-          <div className="space-y-6">
+        <Routes>
+          <Route path="/" element={
+            <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {Object.entries(statusCounts).map(([status, count]) => {
                 const capitalizedStatus = status.charAt(0).toUpperCase() + status.slice(1)
@@ -342,83 +355,91 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
               <SLAAdherenceCard />
             </div>
           </div>
-        )}
-
-        {activeTab === 'analytics' && (
-          <div className="space-y-6">
-            <RealtimeSLADashboard onCardClick={setModalData} />
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <AgentPerformanceScorecard />
-              <TicketAgingAnalysis />
+          } />
+          <Route path="/analytics" element={
+            <div className="space-y-6">
+              <RealtimeSLADashboard onCardClick={setModalData} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <AgentPerformanceScorecard />
+                <TicketAgingAnalysis />
+              </div>
             </div>
-          </div>
-        )}
+          } />
 
         {modalData && <DataModal title={modalData.title} data={modalData.data} onClose={() => setModalData(null)} />}
 
-        {activeTab === 'dashboard' && (
-          <div className="mb-4 flex justify-end">
-            <button
-              onClick={handleExportExcel}
-              className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
-            >
-              Export Excel
-            </button>
-          </div>
-        )}
-
-        {activeTab === 'allTickets' && (
-          <div className="grid gap-4">
-            {tickets.length === 0 ? (
-              <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
-                No tickets found
+          <Route path="/tickets" element={
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <button
+                  onClick={handleExportExcel}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+                >
+                  Export Excel
+                </button>
               </div>
-            ) : (
-              tickets.map((ticket) => (
-                <div key={ticket.id} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{ticket.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{ticket.id}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        ticket.status === 'Closed' ? 'bg-gray-100 text-gray-800' :
-                        ticket.status === 'Open' ? 'bg-green-100 text-green-800' :
-                        ticket.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
-                        {ticket.status}
-                      </span>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        ticket.priority === 'Critical' ? 'bg-red-100 text-red-800' :
-                        ticket.priority === 'High' ? 'bg-orange-100 text-orange-800' :
-                        ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {ticket.priority}
-                      </span>
-                    </div>
+              <div className="grid gap-4">
+                {tickets.length === 0 ? (
+                  <div className="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+                    No tickets found
                   </div>
-                  <p className="text-gray-700 mb-3">{ticket.description}</p>
-                  <div className="flex justify-between items-center">
-                    <div className="flex gap-4 text-sm text-gray-500">
-                      <span>Category: {ticket.category}</span>
-                      <span>Created: {new Date(ticket.created_at).toLocaleDateString()}</span>
-                      {ticket.assigned_to && <span>Assigned to: Agent {ticket.assigned_to}</span>}
+                ) : (
+                  tickets.map((ticket) => (
+                    <div key={ticket.id} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">{ticket.title}</h3>
+                          <p className="text-sm text-gray-600 mt-1">{ticket.id}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            ticket.status === 'Closed' ? 'bg-gray-100 text-gray-800' :
+                            ticket.status === 'Open' ? 'bg-green-100 text-green-800' :
+                            ticket.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-blue-100 text-blue-800'
+                          }`}>
+                            {ticket.status}
+                          </span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                            ticket.priority === 'Critical' ? 'bg-red-100 text-red-800' :
+                            ticket.priority === 'High' ? 'bg-orange-100 text-orange-800' :
+                            ticket.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {ticket.priority}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 mb-3">{ticket.description}</p>
+                      <div className="flex justify-between items-center">
+                        <div className="flex gap-4 text-sm text-gray-500">
+                          <span>Category: {ticket.category}</span>
+                          <span>Created: {new Date(ticket.created_at).toLocaleDateString()}</span>
+                          {ticket.assigned_to && <span>Assigned to: Agent {ticket.assigned_to}</span>}
+                        </div>
+                        <button
+                          onClick={() => setSelectedTicket(ticket)}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                        >
+                          View Details
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => setSelectedTicket(ticket)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
-                    >
-                      View Details
-                    </button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        )}
+                  ))
+                )}
+              </div>
+              {pagination.pages > 1 && (
+                <Pagination
+                  currentPage={pagination.page}
+                  totalPages={pagination.pages}
+                  onPageChange={handlePageChange}
+                  hasNext={pagination.has_next}
+                  hasPrev={pagination.has_prev}
+                />
+              )}
+            </div>
+          } />
+        </Routes>
       </main>
 
       {selectedTicket && (

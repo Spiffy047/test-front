@@ -1,6 +1,7 @@
 // Notification bell component with dropdown alerts
 import { useState, useEffect } from 'react'
 import { API_CONFIG } from '../../config/api'
+import { secureApiRequest } from '../../utils/api'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -23,40 +24,21 @@ export default function NotificationBell({ user, onNotificationClick }) {
 
   const fetchAlerts = async () => {
     try {
-      const response = await fetch(`${API_URL}/alerts/${user.id}`)
-      if (!response.ok) {
-        if (response.status !== 404) {
-          console.warn(`Failed to load alerts: ${response.status}`)
-        }
-        setAlerts([])
-        return
-      }
-      const text = await response.text()
-      if (!text) {
-        setAlerts([])
-        return
-      }
-      const data = JSON.parse(text)
+      const data = await secureApiRequest(`/alerts/${user.id}`)
       setAlerts(Array.isArray(data) ? data.slice(0, 10) : [])
     } catch (err) {
-      console.error('Failed to fetch alerts:', err)
-      setAlerts([])
+      if (err.message.includes('404')) {
+        setAlerts([])
+      } else {
+        console.error('Failed to fetch alerts:', err)
+        setAlerts([])
+      }
     }
   }
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await fetch(`${API_URL}/alerts/${user.id}/count`)
-      if (!response.ok) {
-        setUnreadCount(0)
-        return
-      }
-      const text = await response.text()
-      if (!text) {
-        setUnreadCount(0)
-        return
-      }
-      const data = JSON.parse(text)
+      const data = await secureApiRequest(`/alerts/${user.id}/count`)
       setUnreadCount(data.count || 0)
     } catch (err) {
       console.error('Failed to fetch unread count:', err)
@@ -66,15 +48,9 @@ export default function NotificationBell({ user, onNotificationClick }) {
 
   const markAsRead = async (alertId) => {
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      const response = await fetch(`${API_URL}/alerts/${alertId}/read`, { 
-        method: 'PUT',
-        headers: {
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin'
+      await secureApiRequest(`/alerts/${alertId}/read`, { 
+        method: 'PUT'
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       fetchAlerts()
       fetchUnreadCount()
     } catch (err) {
@@ -84,15 +60,9 @@ export default function NotificationBell({ user, onNotificationClick }) {
 
   const markAllAsRead = async () => {
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      const response = await fetch(`${API_URL}/alerts/${user.id}/read-all`, { 
-        method: 'PUT',
-        headers: {
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin'
+      await secureApiRequest(`/alerts/${user.id}/read-all`, { 
+        method: 'PUT'
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       fetchAlerts()
       fetchUnreadCount()
       setShowDropdown(false)

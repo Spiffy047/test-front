@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { API_CONFIG } from '../../config/api'
+import { secureApiRequest } from '../../utils/api'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -30,9 +31,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
   const fetchMessages = async () => {
     try {
-      const response = await fetch(`${API_URL}/messages/ticket/${ticket.id}/timeline`)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
+      const data = await secureApiRequest(`/messages/ticket/${ticket.id}/timeline`)
       setMessages(Array.isArray(data) ? data : data.messages || [])
     } catch (err) {
       console.error('Failed to fetch messages:', err)
@@ -42,9 +41,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
   const fetchActivities = async () => {
     try {
-      const response = await fetch(`${API_URL}/tickets/${ticket.id}/activities`)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
+      const data = await secureApiRequest(`/tickets/${ticket.id}/activities`)
       setActivities(data || [])
     } catch (err) {
       console.error('Failed to fetch activities:', err)
@@ -54,9 +51,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
   const fetchAgents = async () => {
     try {
-      const response = await fetch(`${API_URL}/agents`)
-      if (!response.ok) throw new Error(`Failed to load agents (${response.status})`)
-      const data = await response.json()
+      const data = await secureApiRequest('/agents')
       setAgents(data || [])
     } catch (err) {
       console.error('Failed to fetch agents:', err)
@@ -66,9 +61,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
   const fetchAttachments = async () => {
     try {
-      const response = await fetch(`${API_URL}/files/ticket/${ticket.id}`)
-      if (!response.ok) throw new Error(`Failed to load attachments (${response.status})`)
-      const data = await response.json()
+      const data = await secureApiRequest(`/files/ticket/${ticket.id}`)
       setAttachments(data || [])
     } catch (err) {
       console.error('Failed to fetch attachments:', err)

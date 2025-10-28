@@ -7,6 +7,7 @@ import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import Footer from '../common/Footer'
 import { API_CONFIG } from '../../config/api'
 import { getRoleStyles } from '../../utils/styleHelpers'
+import { secureApiRequest } from '../../utils/api'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -45,9 +46,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
 
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
-      const response = await fetch(`${API_URL}/tickets`)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
+      const data = await secureApiRequest('/tickets')
       const tickets = data.tickets || data || []
       const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
       if (ticket) {
@@ -60,9 +59,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`${API_URL}/users`)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
+      const data = await secureApiRequest('/users')
       if (data.users && Array.isArray(data.users)) {
         setUsers(data.users)
         setAllUsers(data.users)
@@ -82,30 +79,16 @@ export default function SystemAdminDashboard({ user, onLogout }) {
 
   const handleSaveUser = async (userData) => {
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      const response = editingUser
-        ? await fetch(`${API_URL}/users/${editingUser.id}`, {
-            method: 'PUT',
-            headers: { 
-              'Content-Type': 'application/json',
-              ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify(userData)
-          })
-        : await fetch(`${API_URL}/users`, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify(userData)
-          })
-      
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || `HTTP ${response.status}`)
+      if (editingUser) {
+        await secureApiRequest(`/users/${editingUser.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(userData)
+        })
+      } else {
+        await secureApiRequest('/users', {
+          method: 'POST',
+          body: JSON.stringify(userData)
+        })
       }
       
       alert('User saved successfully!')
@@ -122,15 +105,9 @@ export default function SystemAdminDashboard({ user, onLogout }) {
     if (!confirm('Are you sure you want to delete this user?')) return
     
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      const response = await fetch(`${API_URL}/users/${userId}`, { 
-        method: 'DELETE',
-        headers: {
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin'
+      await secureApiRequest(`/users/${userId}`, { 
+        method: 'DELETE'
       })
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       alert('User deleted successfully!')
       fetchUsers()
     } catch (err) {
@@ -141,14 +118,12 @@ export default function SystemAdminDashboard({ user, onLogout }) {
 
   const fetchSystemStats = async () => {
     try {
-      const [ticketsRes, agentsRes] = await Promise.all([
-        fetch(`${API_URL}/tickets`),
-        fetch(`${API_URL}/users?role=Technical User,Technical Supervisor`)
+      const [tickets, agents] = await Promise.all([
+        secureApiRequest('/tickets'),
+        secureApiRequest('/users?role=Technical User,Technical Supervisor')
       ])
       
-      if (ticketsRes.ok && agentsRes.ok) {
-        const tickets = await ticketsRes.json()
-        const agents = await agentsRes.json()
+      if (tickets && agents) {
         
         const ticketList = tickets.tickets || tickets || []
         const agentList = agents.users || agents || []

@@ -8,6 +8,7 @@ import ToastNotification from '../notifications/ToastNotification'
 import Footer from '../common/Footer'
 import { API_CONFIG } from '../../config/api'
 import { getPriorityStyles, getStatusStyles } from '../../utils/styleHelpers'
+import { secureApiRequest } from '../../utils/api'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -47,9 +48,7 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
 
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
-      const response = await fetch(`${API_URL}/tickets`)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
+      const data = await secureApiRequest('/tickets')
       const tickets = data.tickets || data || []
       const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
       if (ticket) {
@@ -63,9 +62,7 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
   // Fetch all tickets from API
   const fetchTickets = async () => {
     try {
-      const response = await fetch(`${API_URL}/tickets`)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
+      const data = await secureApiRequest('/tickets')
       if (data.tickets && Array.isArray(data.tickets)) {
         setTickets(data.tickets)
         setAllTickets(data.tickets)
@@ -85,9 +82,7 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
 
   const fetchAgentWorkload = async () => {
     try {
-      const response = await fetch(`${API_URL}/analytics/agent-workload`)
-      if (!response.ok) throw new Error(`Failed to load agent workload (${response.status})`)
-      const data = await response.json()
+      const data = await secureApiRequest('/analytics/agent-workload')
       setAgentWorkload(data)
     } catch (err) {
       console.error('Failed to fetch agent workload:', err)
@@ -98,21 +93,14 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
   // Update ticket status (Set Pending, Resolve)
   const handleStatusUpdate = async (ticketId, newStatus) => {
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
+      await secureApiRequest(`/tickets/${ticketId}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin',
         body: JSON.stringify({
           status: newStatus,
           performed_by: user.id,
           performed_by_name: user.name
         })
       })
-      if (!response.ok) throw new Error(`Status update failed (${response.status})`)
       fetchTickets()
       alert('Ticket status updated successfully!')
     } catch (err) {
@@ -124,21 +112,14 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
   // Assign ticket to agent
   const handleAssignTicket = async (ticketId, agentId) => {
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
+      await secureApiRequest(`/tickets/${ticketId}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin',
         body: JSON.stringify({
           assigned_to: agentId,
           performed_by: user.id,
           performed_by_name: user.name
         })
       })
-      if (!response.ok) throw new Error(`Assignment failed (${response.status})`)
       fetchTickets()
       fetchAgentWorkload()
       alert('Ticket assigned successfully!')
@@ -152,14 +133,8 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
   const handleTakeAction = async (ticket) => {
     try {
       // Assign ticket to current user and set status to Open
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      const updateResponse = await fetch(`${API_URL}/tickets/${ticket.id}`, {
+      await secureApiRequest(`/tickets/${ticket.id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin',
         body: JSON.stringify({
           assigned_to: user.id,
           status: 'Open',
@@ -167,16 +142,10 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           performed_by_name: user.name
         })
       })
-      if (!updateResponse.ok) throw new Error(`HTTP ${updateResponse.status}`)
 
       // Send message to ticket timeline notifying user
-      const messageResponse = await fetch(`${API_URL}/messages`, {
+      await secureApiRequest('/messages', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin',
         body: JSON.stringify({
           ticket_id: ticket.id,
           sender_id: user.id,
@@ -185,26 +154,18 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           message: `🚨 SLA violation detected. I have taken ownership of this ticket and will prioritize resolution. You will receive updates as we progress.`
         })
       })
-      if (!messageResponse.ok) throw new Error(`HTTP ${messageResponse.status}`)
 
       // Send email notification to original user
       try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-        const emailResponse = await fetch(`${API_URL}/notifications/email`, {
+        await secureApiRequest('/notifications/email', {
           method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-          },
-          credentials: 'same-origin',
           body: JSON.stringify({
-            to_email: ticket.creator?.email || 'user@company.com',
+            to_email: ticket.creator?.email || process.env.REACT_APP_DEFAULT_EMAIL || 'support@example.com',
             ticket_id: ticket.ticket_id || ticket.id,
             ticket_title: ticket.title,
             message_type: 'assigned'
           })
         })
-        if (!emailResponse.ok) throw new Error(`HTTP ${emailResponse.status}`)
       } catch (emailErr) {
         console.error('Failed to send email notification:', emailErr)
       }

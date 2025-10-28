@@ -11,6 +11,7 @@ import NotificationBell from '../notifications/NotificationBell'
 import Footer from '../common/Footer'
 import Pagination from '../common/Pagination'
 import { API_CONFIG } from '../../config/api'
+import { secureApiRequest } from '../../utils/api'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -51,9 +52,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
 
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
-      const response = await fetch(`${API_URL}/tickets`)
-      if (!response.ok) throw new Error(`Failed to load ticket (${response.status})`)
-      const data = await response.json()
+      const data = await secureApiRequest('/tickets')
       const tickets = data.tickets || data || []
       const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
       if (ticket) {
@@ -73,9 +72,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
 
   const fetchTickets = async (page = 1) => {
     try {
-      const response = await fetch(`${API_URL}/tickets?page=${page}&per_page=10`)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
+      const data = await secureApiRequest(`/tickets?page=${page}&per_page=10`)
       if (data.tickets && Array.isArray(data.tickets)) {
         setTickets(data.tickets)
         setAllTickets(data.tickets)
@@ -97,20 +94,15 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
 
   const fetchAnalytics = async () => {
     try {
-      const [statusRes, unassignedRes, workloadRes] = await Promise.all([
-        fetch(`${API_URL}/analytics/ticket-status-counts`),
-        fetch(`${API_URL}/analytics/unassigned-tickets`),
-        fetch(`${API_URL}/analytics/agent-workload`)
+      const [statusCounts, unassigned, agentWorkload] = await Promise.all([
+        secureApiRequest('/analytics/ticket-status-counts'),
+        secureApiRequest('/analytics/unassigned-tickets'),
+        secureApiRequest('/analytics/agent-workload')
       ])
       
-      if (!statusRes.ok) throw new Error(`Status API: HTTP ${statusRes.status}`)
-      if (!unassignedRes.ok) throw new Error(`Unassigned API: HTTP ${unassignedRes.status}`)
-      if (!workloadRes.ok) throw new Error(`Workload API: HTTP ${workloadRes.status}`)
-      
-      setStatusCounts(await statusRes.json())
-      const unassigned = await unassignedRes.json()
+      setStatusCounts(statusCounts)
       setUnassignedTickets(unassigned.tickets || [])
-      setAgentWorkload(await workloadRes.json())
+      setAgentWorkload(agentWorkload)
     } catch (err) {
       console.error('Failed to fetch analytics:', err)
       setStatusCounts({})
@@ -121,33 +113,14 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
 
   const handleAssignTicket = async (ticketId, agentId) => {
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
+      await secureApiRequest(`/tickets/${ticketId}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin',
         body: JSON.stringify({
           assigned_to: agentId,
           performed_by: user.id,
           performed_by_name: user.name
         })
       })
-      
-      if (!response.ok) {
-        let errorData = {}
-        try {
-          const contentType = response.headers.get('content-type')
-          if (contentType && contentType.includes('application/json')) {
-            errorData = await response.json()
-          }
-        } catch (parseError) {
-          console.warn('Failed to parse error response:', parseError)
-        }
-        throw new Error(errorData.message || `Assignment failed: HTTP ${response.status}`)
-      }
       
       // Success feedback
       alert('Ticket assigned successfully!')
@@ -163,13 +136,9 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
 
   const handleExportExcel = async () => {
     try {
-      const response = await fetch(`${API_URL}/export/tickets/excel`, {
+      const response = await secureApiRequest('/export/tickets/excel', {
         method: 'GET'
       })
-      
-      if (!response.ok) {
-        throw new Error(`Export failed: HTTP ${response.status}`)
-      }
       
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)

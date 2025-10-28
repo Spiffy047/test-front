@@ -6,6 +6,7 @@ import ToastNotification from '../notifications/ToastNotification'
 import Footer from '../common/Footer'
 import { API_CONFIG } from '../../config/api'
 import { getPriorityStyles, getStatusStyles } from '../../utils/styleHelpers'
+import { secureApiRequest } from '../../utils/api'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -42,9 +43,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
 
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
-      const response = await fetch(`${API_URL}/tickets`)
-      if (!response.ok) throw new Error(`Failed to load ticket (${response.status})`)
-      const data = await response.json()
+      const data = await secureApiRequest('/tickets')
       const tickets = data.tickets || data || []
       const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
       if (ticket) {
@@ -60,9 +59,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
 
   const fetchTickets = async () => {
     try {
-      const response = await fetch(`${API_URL}/tickets?created_by=${user.id}`)
-      if (!response.ok) throw new Error(`HTTP ${response.status}`)
-      const data = await response.json()
+      const data = await secureApiRequest(`/tickets?created_by=${user.id}`)
       if (data.tickets && Array.isArray(data.tickets)) {
         setTickets(data.tickets)
         setAllTickets(data.tickets)
@@ -86,14 +83,8 @@ export default function NormalUserDashboard({ user, onLogout }) {
     
     try {
       // Create ticket first
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      const ticketResponse = await fetch(`${API_URL}/tickets`, {
+      const newTicket = await secureApiRequest('/tickets', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin',
         body: JSON.stringify({
           title: formData.get('title'),
           description: formData.get('description'),
@@ -102,18 +93,6 @@ export default function NormalUserDashboard({ user, onLogout }) {
           created_by: user.id
         })
       })
-
-      if (!ticketResponse.ok) throw new Error(`HTTP ${ticketResponse.status}`)
-      if (ticketResponse.ok) {
-        let newTicket = {}
-        try {
-          const contentType = ticketResponse.headers.get('content-type')
-          if (contentType && contentType.includes('application/json')) {
-            newTicket = await ticketResponse.json()
-          }
-        } catch (parseError) {
-          console.warn('Failed to parse ticket response as JSON:', parseError)
-        }
         
         // Handle file uploads if any
         const fileInput = e.target.querySelector('input[type="file"]')
@@ -125,16 +104,11 @@ export default function NormalUserDashboard({ user, onLogout }) {
             uploadFormData.append('uploaded_by', user.id)
             
             try {
-              const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-              const uploadResponse = await fetch(`${API_URL}/files/upload`, {
+              await secureApiRequest('/files/upload', {
                 method: 'POST',
-                headers: {
-                  ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-                },
-                credentials: 'same-origin',
-                body: uploadFormData
+                body: uploadFormData,
+                headers: {} // Let browser set content-type for FormData
               })
-              if (!uploadResponse.ok) throw new Error(`File upload failed (${uploadResponse.status})`)
             } catch (uploadErr) {
               console.error('Failed to upload file:', uploadErr)
               alert(`Failed to upload ${file.name}: ${uploadErr.message}`)

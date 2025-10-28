@@ -20,6 +20,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   const [statusCounts, setStatusCounts] = useState({})
   const [unassignedTickets, setUnassignedTickets] = useState([])
   const [agentWorkload, setAgentWorkload] = useState([])
+  const [agents, setAgents] = useState([])
   const [selectedTicket, setSelectedTicket] = useState(null)
   const [modalData, setModalData] = useState(null)
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0, has_next: false, has_prev: false })
@@ -94,20 +95,23 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
 
   const fetchAnalytics = async () => {
     try {
-      const [statusCounts, unassigned, agentWorkload] = await Promise.all([
+      const [statusCounts, unassigned, agentWorkload, agentsData] = await Promise.all([
         secureApiRequest('/analytics/ticket-status-counts'),
         secureApiRequest('/analytics/unassigned-tickets'),
-        secureApiRequest('/analytics/agent-workload')
+        secureApiRequest('/analytics/agent-workload'),
+        secureApiRequest('/agents')
       ])
       
       setStatusCounts(statusCounts)
       setUnassignedTickets(unassigned.tickets || [])
       setAgentWorkload(agentWorkload)
+      setAgents(agentsData || [])
     } catch (err) {
       console.error('Failed to fetch analytics:', err)
       setStatusCounts({})
       setUnassignedTickets([])
       setAgentWorkload([])
+      setAgents([])
     }
   }
 
@@ -167,7 +171,9 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold text-gray-900">Hotfix ServiceDesk - Supervisor Portal</h1>
             <div className="flex items-center gap-4">
-              <NotificationBell user={user} onNotificationClick={handleNotificationClick} />
+              <div className="relative">
+                <NotificationBell user={user} onNotificationClick={handleNotificationClick} />
+              </div>
               <div className="text-sm">
                 <span className="text-gray-600">Welcome, </span>
                 <span className="font-medium">{user.name}</span>
@@ -294,7 +300,11 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
                         defaultValue=""
                       >
                         <option value="">Assign to...</option>
-                        {agentWorkload.map(agent => (
+                        {agents.length > 0 ? agents.map(agent => (
+                          <option key={agent.id} value={agent.id}>
+                            {agent.name} ({agentWorkload.find(a => a.agent_id === agent.id)?.active_tickets || 0} active)
+                          </option>
+                        )) : agentWorkload.map(agent => (
                           <option key={agent.agent_id} value={agent.agent_id}>
                             {agent.name} ({agent.active_tickets} active)
                           </option>

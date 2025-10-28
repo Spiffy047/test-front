@@ -86,14 +86,13 @@ export default function NotificationBell({ user, onNotificationClick }) {
     <div className="relative">
       <button
         onClick={() => setShowDropdown(!showDropdown)}
-        className="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none"
+        className={`relative p-2 rounded-full min-w-[40px] h-10 flex items-center justify-center font-semibold text-sm transition-colors ${
+          unreadCount > 0 
+            ? 'bg-red-500 text-white hover:bg-red-600' 
+            : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+        }`}
       >
-        <span className="text-lg font-semibold">{unreadCount > 0 ? unreadCount : '0'}</span>
-        {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-            {unreadCount > 9 ? '9+' : unreadCount}
-          </span>
-        )}
+        {unreadCount > 9 ? '9+' : unreadCount}
       </button>
 
       {showDropdown && (

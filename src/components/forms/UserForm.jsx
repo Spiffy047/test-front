@@ -27,7 +27,11 @@ export default function UserForm({ user, onSubmit, onCancel }) {
   }, [user, reset])
 
   const handleFormSubmit = (data) => {
-    onSubmit(data)
+    try {
+      onSubmit(data)
+    } catch (error) {
+      console.error('Form submission error:', error)
+    }
   }
 
   return (

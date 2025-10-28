@@ -1,4 +1,18 @@
 export default function DataModal({ title, data, onClose }) {
+  if (!data) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
+        <div className="bg-white rounded-lg shadow-xl w-full max-h-[80vh] overflow-hidden" style={{maxWidth: '76rem'}} onClick={e => e.stopPropagation()}>
+          <div className="flex justify-between items-center p-6 border-b">
+            <h2 className="text-xl font-bold">{title}</h2>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+          </div>
+          <div className="p-6 text-center text-gray-500">No data available</div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" onClick={onClose}>
       <div className="bg-white rounded-lg shadow-xl w-full max-h-[80vh] overflow-hidden" style={{maxWidth: '76rem'}} onClick={e => e.stopPropagation()}>
@@ -7,7 +21,7 @@ export default function DataModal({ title, data, onClose }) {
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
         </div>
         <div className="p-6 overflow-y-auto max-h-[calc(80vh-80px)]">
-          {data.length === 0 ? (
+          {!Array.isArray(data) || data.length === 0 ? (
             <div className="text-center text-gray-500 py-8">No data available</div>
           ) : (
             <div className="space-y-3">

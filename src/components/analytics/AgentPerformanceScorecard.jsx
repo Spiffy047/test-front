@@ -1,8 +1,9 @@
 // Import React hooks for state management and lifecycle
 import { useEffect, useState } from 'react'
+import { API_CONFIG } from '../../config/api'
 
 // API base URL for backend communication
-const API_URL = 'https://hotfix.onrender.com/api'
+const API_URL = API_CONFIG.BASE_URL
 
 /**
  * AgentPerformanceScorecard Component
@@ -15,11 +16,18 @@ export default function AgentPerformanceScorecard() {
 
   // Fetch agent performance data on component mount
   useEffect(() => {
-    // API call to get detailed agent performance metrics
-    fetch(`${API_URL}/analytics/agent-performance-detailed`)
-      .then(res => res.json()) // Parse JSON response
-      .then(setAgents) // Update agents state with fetched data
-      .catch(console.error) // Log any errors to console
+    const fetchAgentData = async () => {
+      try {
+        const res = await fetch(`${API_URL}/analytics/agent-performance-detailed`)
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const data = await res.json()
+        setAgents(Array.isArray(data) ? data : [])
+      } catch (error) {
+        console.error('Failed to fetch agent performance data:', error)
+        setAgents([])
+      }
+    }
+    fetchAgentData()
   }, []) // Empty dependency array - runs only once on mount
 
   /**
@@ -45,19 +53,19 @@ export default function AgentPerformanceScorecard() {
       {/* Container for agent cards with vertical spacing */}
       <div className="space-y-4">
         {/* Map through agents array to render individual performance cards */}
-        {agents.map(agent => (
+        {Array.isArray(agents) && agents.length > 0 ? agents.map(agent => (
           // Individual agent performance card
-          <div key={agent.agent_id} className="border rounded-lg p-4">
+          <div key={agent?.agent_id || 'unknown'} className="border rounded-lg p-4">
             {/* Agent header with name, email, and performance rating */}
             <div className="flex justify-between items-start mb-3">
               {/* Agent basic info */}
               <div>
-                <h4 className="font-semibold text-gray-900">{agent.name}</h4>
-                <p className="text-sm text-gray-600">{agent.email}</p>
+                <h4 className="font-semibold text-gray-900">{agent?.name || 'Unknown Agent'}</h4>
+                <p className="text-sm text-gray-600">{agent?.email || 'No email'}</p>
               </div>
               {/* Performance rating badge with dynamic color */}
-              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getRatingColor(agent.performance_rating)}`}>
-                {agent.performance_rating}
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${getRatingColor(agent?.performance_rating)}`}>
+                {agent?.performance_rating || 'Unknown'}
               </span>
             </div>
             
@@ -66,33 +74,37 @@ export default function AgentPerformanceScorecard() {
               {/* Active tickets count */}
               <div>
                 <div className="text-gray-600">Active</div>
-                <div className="font-semibold text-lg">{agent.active_tickets}</div>
+                <div className="font-semibold text-lg">{agent?.active_tickets || 0}</div>
               </div>
               {/* Closed tickets count */}
               <div>
                 <div className="text-gray-600">Closed</div>
-                <div className="font-semibold text-lg">{agent.closed_tickets}</div>
+                <div className="font-semibold text-lg">{agent?.closed_tickets || 0}</div>
               </div>
               {/* Average handle time in hours */}
               <div>
                 <div className="text-gray-600">Avg Time</div>
-                <div className="font-semibold text-lg">{agent.avg_handle_time.toFixed(1)}h</div>
+                <div className="font-semibold text-lg">{(agent?.avg_handle_time || 0).toFixed(1)}h</div>
               </div>
               {/* SLA violations count (highlighted in red) */}
               <div>
                 <div className="text-gray-600">Violations</div>
-                <div className="font-semibold text-lg text-red-600">{agent.sla_violations}</div>
+                <div className="font-semibold text-lg text-red-600">{agent?.sla_violations || 0}</div>
               </div>
             </div>
             
             {/* Performance score section with top border */}
             <div className="mt-3 pt-3 border-t">
               <div className="text-sm text-gray-600">
-                Performance Score: <span className="font-semibold text-gray-900">{agent.performance_score}</span>
+                Performance Score: <span className="font-semibold text-gray-900">{agent?.performance_score || 0}</span>
               </div>
             </div>
           </div>
-        ))}
+        )) : (
+          <div className="text-center text-gray-500 py-8">
+            No agent performance data available
+          </div>
+        )}
       </div>
     </div>
   )

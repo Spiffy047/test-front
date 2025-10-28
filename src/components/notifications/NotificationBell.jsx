@@ -1,7 +1,8 @@
 // Notification bell component with dropdown alerts
 import { useState, useEffect } from 'react'
+import { API_CONFIG } from '../../config/api'
 
-const API_URL = 'https://hotfix.onrender.com/api'
+const API_URL = API_CONFIG.BASE_URL
 
 export default function NotificationBell({ user, onNotificationClick }) {
   const [alerts, setAlerts] = useState([])  // Recent alerts list
@@ -33,8 +34,9 @@ export default function NotificationBell({ user, onNotificationClick }) {
         return
       }
       const data = JSON.parse(text)
-      setAlerts(data.slice(0, 10)) // Show latest 10
+      setAlerts(Array.isArray(data) ? data.slice(0, 10) : [])
     } catch (err) {
+      console.error('Failed to fetch alerts:', err)
       setAlerts([])
     }
   }
@@ -54,13 +56,22 @@ export default function NotificationBell({ user, onNotificationClick }) {
       const data = JSON.parse(text)
       setUnreadCount(data.count || 0)
     } catch (err) {
+      console.error('Failed to fetch unread count:', err)
       setUnreadCount(0)
     }
   }
 
   const markAsRead = async (alertId) => {
     try {
-      await fetch(`${API_URL}/alerts/${alertId}/read`, { method: 'PUT' })
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      const response = await fetch(`${API_URL}/alerts/${alertId}/read`, { 
+        method: 'PUT',
+        headers: {
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin'
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       fetchAlerts()
       fetchUnreadCount()
     } catch (err) {
@@ -70,7 +81,15 @@ export default function NotificationBell({ user, onNotificationClick }) {
 
   const markAllAsRead = async () => {
     try {
-      await fetch(`${API_URL}/alerts/${user.id}/read-all`, { method: 'PUT' })
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      const response = await fetch(`${API_URL}/alerts/${user.id}/read-all`, { 
+        method: 'PUT',
+        headers: {
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin'
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       fetchAlerts()
       fetchUnreadCount()
       setShowDropdown(false)

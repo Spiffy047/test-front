@@ -5,9 +5,9 @@ import UserForm from '../forms/UserForm'
 import NotificationBell from '../notifications/NotificationBell'
 import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import Footer from '../common/Footer'
+import { API_CONFIG } from '../../config/api'
 
-
-const API_URL = 'https://hotfix.onrender.com/api'
+const API_URL = API_CONFIG.BASE_URL
 
 export default function SystemAdminDashboard({ user, onLogout }) {
   const [users, setUsers] = useState([])
@@ -16,14 +16,36 @@ export default function SystemAdminDashboard({ user, onLogout }) {
   const [showUserModal, setShowUserModal] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
   const [selectedTicket, setSelectedTicket] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [systemStats, setSystemStats] = useState({ totalAgents: 0, activeTickets: 0, avgResolution: 0 })
 
   useEffect(() => {
     fetchUsers()
+    fetchSystemStats()
   }, [])
+
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!searchTerm) {
+        setUsers(allUsers)
+        return
+      }
+      const filtered = allUsers.filter(u => 
+        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.role.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setUsers(filtered)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, allUsers])
 
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
       const response = await fetch(`${API_URL}/tickets`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       const tickets = data.tickets || data || []
       const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
@@ -38,6 +60,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
   const fetchUsers = async () => {
     try {
       const response = await fetch(`${API_URL}/users`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       if (data.users && Array.isArray(data.users)) {
         setUsers(data.users)
@@ -58,29 +81,39 @@ export default function SystemAdminDashboard({ user, onLogout }) {
 
   const handleSaveUser = async (userData) => {
     try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
       const response = editingUser
         ? await fetch(`${API_URL}/users/${editingUser.id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+            },
+            credentials: 'same-origin',
             body: JSON.stringify(userData)
           })
         : await fetch(`${API_URL}/users`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+            },
+            credentials: 'same-origin',
             body: JSON.stringify(userData)
           })
       
-      if (response.ok) {
-        setShowUserModal(false)
-        setEditingUser(null)
-        fetchUsers()
-      } else {
+      if (!response.ok) {
         const error = await response.json()
-        alert(error.error || 'Failed to save user')
+        throw new Error(error.error || `HTTP ${response.status}`)
       }
+      
+      alert('User saved successfully!')
+      setShowUserModal(false)
+      setEditingUser(null)
+      fetchUsers()
     } catch (err) {
       console.error('Failed to save user:', err)
-      alert('Failed to save user')
+      alert(err.message || 'Failed to save user')
     }
   }
 
@@ -88,10 +121,60 @@ export default function SystemAdminDashboard({ user, onLogout }) {
     if (!confirm('Are you sure you want to delete this user?')) return
     
     try {
-      await fetch(`${API_URL}/users/${userId}`, { method: 'DELETE' })
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      const response = await fetch(`${API_URL}/users/${userId}`, { 
+        method: 'DELETE',
+        headers: {
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin'
+      })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      alert('User deleted successfully!')
       fetchUsers()
     } catch (err) {
       console.error('Failed to delete user:', err)
+      alert('Failed to delete user')
+    }
+  }
+
+  const fetchSystemStats = async () => {
+    try {
+      const [ticketsRes, agentsRes] = await Promise.all([
+        fetch(`${API_URL}/tickets`),
+        fetch(`${API_URL}/users?role=Technical User,Technical Supervisor`)
+      ])
+      
+      if (ticketsRes.ok && agentsRes.ok) {
+        const tickets = await ticketsRes.json()
+        const agents = await agentsRes.json()
+        
+        const ticketList = tickets.tickets || tickets || []
+        const agentList = agents.users || agents || []
+        
+        const activeTickets = ticketList.filter(t => t.status !== 'Closed').length
+        const totalAgents = agentList.filter(u => 
+          u.role === 'Technical User' || u.role === 'Technical Supervisor'
+        ).length
+        
+        // Calculate average resolution time from closed tickets
+        const closedTickets = ticketList.filter(t => t.status === 'Closed' && t.resolved_at)
+        const avgResolution = closedTickets.length > 0 
+          ? closedTickets.reduce((sum, ticket) => {
+              const created = new Date(ticket.created_at)
+              const resolved = new Date(ticket.resolved_at)
+              return sum + (resolved - created) / (1000 * 60 * 60) // hours
+            }, 0) / closedTickets.length
+          : 0
+        
+        setSystemStats({
+          totalAgents,
+          activeTickets,
+          avgResolution: avgResolution.toFixed(1)
+        })
+      }
+    } catch (err) {
+      console.error('Failed to fetch system stats:', err)
     }
   }
 
@@ -129,19 +212,8 @@ export default function SystemAdminDashboard({ user, onLogout }) {
           <input
             type="text"
             placeholder="Search users by name, email, or role..."
-            onChange={(e) => {
-              const search = e.target.value.toLowerCase()
-              if (!search) {
-                setUsers(allUsers)
-                return
-              }
-              const filtered = allUsers.filter(u => 
-                u.name.toLowerCase().includes(search) ||
-                u.email.toLowerCase().includes(search) ||
-                u.role.toLowerCase().includes(search)
-              )
-              setUsers(filtered)
-            }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -219,15 +291,15 @@ export default function SystemAdminDashboard({ user, onLogout }) {
                 <div className="space-y-3">
                   <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
                     <span className="font-medium">Total Agents</span>
-                    <span className="text-blue-600 font-semibold">4</span>
+                    <span className="text-blue-600 font-semibold">{systemStats.totalAgents}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-green-50 rounded">
                     <span className="font-medium">Active Tickets</span>
-                    <span className="text-green-600 font-semibold">29</span>
+                    <span className="text-green-600 font-semibold">{systemStats.activeTickets}</span>
                   </div>
                   <div className="flex justify-between items-center p-3 bg-yellow-50 rounded">
                     <span className="font-medium">Avg Resolution</span>
-                    <span className="text-yellow-600 font-semibold">4.9h</span>
+                    <span className="text-yellow-600 font-semibold">{systemStats.avgResolution}h</span>
                   </div>
                 </div>
               </div>

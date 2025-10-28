@@ -1,4 +1,6 @@
 export default function Pagination({ currentPage, totalPages, onPageChange, hasNext, hasPrev }) {
+  if (!currentPage || !totalPages || !onPageChange) return null
+  
   const pages = []
   const startPage = Math.max(1, currentPage - 2)
   const endPage = Math.min(totalPages, currentPage + 2)
@@ -11,14 +13,26 @@ export default function Pagination({ currentPage, totalPages, onPageChange, hasN
     <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
       <div className="flex justify-between flex-1 sm:hidden">
         <button
-          onClick={() => onPageChange(currentPage - 1)}
+          onClick={() => {
+            try {
+              onPageChange(currentPage - 1)
+            } catch (error) {
+              console.error('Pagination error:', error)
+            }
+          }}
           disabled={!hasPrev}
           className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
         >
           Previous
         </button>
         <button
-          onClick={() => onPageChange(currentPage + 1)}
+          onClick={() => {
+            try {
+              onPageChange(currentPage + 1)
+            } catch (error) {
+              console.error('Pagination error:', error)
+            }
+          }}
           disabled={!hasNext}
           className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
         >
@@ -35,7 +49,13 @@ export default function Pagination({ currentPage, totalPages, onPageChange, hasN
         <div>
           <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
             <button
-              onClick={() => onPageChange(currentPage - 1)}
+              onClick={() => {
+                try {
+                  onPageChange(currentPage - 1)
+                } catch (error) {
+                  console.error('Pagination error:', error)
+                }
+              }}
               disabled={!hasPrev}
               className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
             >
@@ -44,7 +64,13 @@ export default function Pagination({ currentPage, totalPages, onPageChange, hasN
             {pages.map((page) => (
               <button
                 key={page}
-                onClick={() => onPageChange(page)}
+                onClick={() => {
+                  try {
+                    onPageChange(page)
+                  } catch (error) {
+                    console.error('Pagination error:', error)
+                  }
+                }}
                 className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
                   page === currentPage
                     ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
@@ -55,7 +81,13 @@ export default function Pagination({ currentPage, totalPages, onPageChange, hasN
               </button>
             ))}
             <button
-              onClick={() => onPageChange(currentPage + 1)}
+              onClick={() => {
+                try {
+                  onPageChange(currentPage + 1)
+                } catch (error) {
+                  console.error('Pagination error:', error)
+                }
+              }}
               disabled={!hasNext}
               className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
             >

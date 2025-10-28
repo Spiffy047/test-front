@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { API_CONFIG } from '../../config/api'
 
-const API_URL = 'https://hotfix.onrender.com/api'
+const API_BASE_URL = API_CONFIG.BASE_URL
 
 export default function RealtimeSLADashboard({ onCardClick }) {
   const [slaData, setSlaData] = useState(null)
@@ -17,34 +18,40 @@ export default function RealtimeSLADashboard({ onCardClick }) {
   const fetchSLAData = async () => {
     try {
       const [slaResponse, ticketsResponse] = await Promise.all([
-        fetch(`${API_URL}/sla/realtime-adherence`),
-        fetch(`${API_URL}/tickets`)
+        fetch(`${API_BASE_URL}/sla/realtime-adherence`),
+        fetch(`${API_BASE_URL}/tickets`)
       ])
+      
+      if (!slaResponse.ok) throw new Error(`SLA API: HTTP ${slaResponse.status}`)
+      if (!ticketsResponse.ok) throw new Error(`Tickets API: HTTP ${ticketsResponse.status}`)
+      
       const data = await slaResponse.json()
       const tickets = await ticketsResponse.json()
-      setSlaData(data)
-      setAllTickets(tickets)
+      setSlaData(data || {})
+      setAllTickets(Array.isArray(tickets) ? tickets : [])
       setLastUpdate(new Date())
     } catch (err) {
       console.error('Failed to fetch SLA data:', err)
+      setSlaData(null)
+      setAllTickets([])
     }
   }
 
   if (!slaData) return <div className="bg-white rounded-lg shadow p-6">Loading...</div>
 
-  const priorityChartData = Object.entries(slaData.priority_breakdown).map(([priority, data]) => ({
+  const priorityChartData = slaData?.priority_breakdown ? Object.entries(slaData.priority_breakdown).map(([priority, data]) => ({
     priority,
-    'Met SLA': data.met_sla,
-    'Violated SLA': data.violated_sla,
-    adherence: data.adherence_percentage
-  }))
+    'Met SLA': data?.met_sla || 0,
+    'Violated SLA': data?.violated_sla || 0,
+    adherence: data?.adherence_percentage || 0
+  })) : []
 
-  const timeAnalysisData = Object.entries(slaData.time_analysis || {}).map(([period, data]) => ({
+  const timeAnalysisData = slaData?.time_analysis ? Object.entries(slaData.time_analysis).map(([period, data]) => ({
     period: period.replace('last_', '').replace('h', ' hours').replace('d', ' days'),
-    'Met SLA': data.met_sla,
-    'Violated': data.violated_sla,
-    adherence: data.adherence_percentage
-  }))
+    'Met SLA': data?.met_sla || 0,
+    'Violated': data?.violated_sla || 0,
+    adherence: data?.adherence_percentage || 0
+  })) : []
 
   return (
     <div className="space-y-6">
@@ -59,27 +66,27 @@ export default function RealtimeSLADashboard({ onCardClick }) {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-blue-50 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => onCardClick?.({ title: 'All Tickets', data: allTickets })}>
             <div className="text-sm text-gray-600">Total Tickets</div>
-            <div className="text-3xl font-bold text-blue-600">{slaData.overall.total_tickets}</div>
+            <div className="text-3xl font-bold text-blue-600">{slaData?.overall?.total_tickets || 0}</div>
           </div>
-          <div className="bg-green-50 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => onCardClick?.({ title: 'Met SLA (Closed)', data: allTickets.filter(t => t.status === 'Closed' && !t.sla_violated) })}>
+          <div className="bg-green-50 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => onCardClick?.({ title: 'Met SLA (Closed)', data: Array.isArray(allTickets) ? allTickets.filter(t => t?.status === 'Closed' && !t?.sla_violated) : [] })}>
             <div className="text-sm text-gray-600">Met SLA (Closed)</div>
-            <div className="text-3xl font-bold text-green-600">{slaData.overall.closed_met_sla}</div>
+            <div className="text-3xl font-bold text-green-600">{slaData?.overall?.closed_met_sla || 0}</div>
             <div className="text-xs text-gray-500 mt-1">
-              {slaData.overall.closed_adherence_percentage}% adherence
+              {slaData?.overall?.closed_adherence_percentage || 0}% adherence
             </div>
           </div>
-          <div className="bg-red-50 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => onCardClick?.({ title: 'Violated SLA Tickets', data: allTickets.filter(t => t.sla_violated) })}>
+          <div className="bg-red-50 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => onCardClick?.({ title: 'Violated SLA Tickets', data: Array.isArray(allTickets) ? allTickets.filter(t => t?.sla_violated) : [] })}>
             <div className="text-sm text-gray-600">Violated SLA</div>
             <div className="text-3xl font-bold text-red-600">
-              {slaData.overall.closed_violated_sla + slaData.overall.open_violated}
+              {(slaData?.overall?.closed_violated_sla || 0) + (slaData?.overall?.open_violated || 0)}
             </div>
             <div className="text-xs text-gray-500 mt-1">
-              {slaData.overall.open_violated} currently open
+              {slaData?.overall?.open_violated || 0} currently open
             </div>
           </div>
-          <div className="bg-amber-50 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => onCardClick?.({ title: 'At Risk Tickets', data: allTickets.filter(t => t.status !== 'Closed' && !t.sla_violated) })}>
+          <div className="bg-amber-50 rounded-lg p-4 cursor-pointer hover:shadow-lg transition-shadow" onClick={() => onCardClick?.({ title: 'At Risk Tickets', data: Array.isArray(allTickets) ? allTickets.filter(t => t?.status !== 'Closed' && !t?.sla_violated) : [] })}>
             <div className="text-sm text-gray-600">At Risk</div>
-            <div className="text-3xl font-bold text-amber-600">{slaData.overall.open_at_risk}</div>
+            <div className="text-3xl font-bold text-amber-600">{slaData?.overall?.open_at_risk || 0}</div>
             <div className="text-xs text-gray-500 mt-1">
               Open tickets near SLA
             </div>
@@ -105,7 +112,7 @@ export default function RealtimeSLADashboard({ onCardClick }) {
           <div>
             <h4 className="text-md font-semibold mb-3">Priority Breakdown</h4>
             <div className="space-y-3">
-              {Object.entries(slaData.priority_breakdown).map(([priority, data]) => (
+              {slaData?.priority_breakdown ? Object.entries(slaData.priority_breakdown).map(([priority, data]) => (
                 <div key={priority} className="border rounded-lg p-3">
                   <div className="flex justify-between items-center mb-2">
                     <span className={`font-medium px-2 py-1 rounded text-sm ${
@@ -117,57 +124,57 @@ export default function RealtimeSLADashboard({ onCardClick }) {
                       {priority}
                     </span>
                     <span className={`font-bold ${
-                      data.adherence_percentage >= 90 ? 'text-green-600' :
-                      data.adherence_percentage >= 75 ? 'text-amber-600' :
+                      (data?.adherence_percentage || 0) >= 90 ? 'text-green-600' :
+                      (data?.adherence_percentage || 0) >= 75 ? 'text-amber-600' :
                       'text-red-600'
                     }`}>
-                      {data.adherence_percentage}%
+                      {data?.adherence_percentage || 0}%
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    {data.met_sla} met / {data.violated_sla} violated
+                    {data?.met_sla || 0} met / {data?.violated_sla || 0} violated
                     <span className="ml-2 text-xs">
-                      (Target: {data.target_hours}h)
+                      (Target: {data?.target_hours || 0}h)
                     </span>
                   </div>
                   <div className="mt-2 bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full ${
-                        data.adherence_percentage >= 90 ? 'bg-green-500' :
-                        data.adherence_percentage >= 75 ? 'bg-amber-500' :
+                        (data?.adherence_percentage || 0) >= 90 ? 'bg-green-500' :
+                        (data?.adherence_percentage || 0) >= 75 ? 'bg-amber-500' :
                         'bg-red-500'
                       }`}
-                      style={{ width: `${data.adherence_percentage}%` }}
+                      style={{ width: `${data?.adherence_percentage || 0}%` }}
                     />
                   </div>
                 </div>
-              ))}
+              )) : <div className="text-gray-500">No priority data available</div>}
             </div>
           </div>
 
           <div>
             <h4 className="text-md font-semibold mb-3">Average Resolution Times</h4>
             <div className="space-y-3">
-              {Object.entries(slaData.average_resolution_times || {}).map(([priority, data]) => (
+              {slaData?.average_resolution_times ? Object.entries(slaData.average_resolution_times).map(([priority, data]) => (
                 <div key={priority} className="border rounded-lg p-3">
                   <div className="flex justify-between items-center mb-2">
                     <span className="font-medium">{priority}</span>
                     <span className={`font-bold ${
-                      data.within_target ? 'text-green-600' : 'text-red-600'
+                      data?.within_target ? 'text-green-600' : 'text-red-600'
                     }`}>
-                      {data.average_hours}h
+                      {data?.average_hours || 0}h
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">
-                    Target: {data.target_hours}h
-                    {data.within_target ? (
+                    Target: {data?.target_hours || 0}h
+                    {data?.within_target ? (
                       <span className="ml-2 text-green-600">Within target</span>
                     ) : (
                       <span className="ml-2 text-red-600">Exceeds target</span>
                     )}
                   </div>
                 </div>
-              ))}
+              )) : <div className="text-gray-500">No resolution time data available</div>}
             </div>
           </div>
         </div>
@@ -193,11 +200,11 @@ export default function RealtimeSLADashboard({ onCardClick }) {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h4 className="font-semibold text-blue-900 mb-2">SLA Targets</h4>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-          {Object.entries(slaData.sla_targets).map(([priority, hours]) => (
+          {slaData?.sla_targets ? Object.entries(slaData.sla_targets).map(([priority, hours]) => (
             <div key={priority} className="bg-white rounded p-2">
-              <span className="font-medium">{priority}:</span> {hours}h
+              <span className="font-medium">{priority}:</span> {hours || 0}h
             </div>
-          ))}
+          )) : <div className="text-gray-500">No SLA targets available</div>}
         </div>
       </div>
     </div>

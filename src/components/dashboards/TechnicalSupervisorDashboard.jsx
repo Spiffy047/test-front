@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Routes, Route, Link, useLocation, Navigate } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import SLAAdherenceCard from '../analytics/SLAAdherenceCard'
@@ -10,10 +10,9 @@ import DataModal from '../common/DataModal'
 import NotificationBell from '../notifications/NotificationBell'
 import Footer from '../common/Footer'
 import Pagination from '../common/Pagination'
+import { API_CONFIG } from '../../config/api'
 
-
-
-const API_URL = 'https://hotfix.onrender.com/api'
+const API_URL = API_CONFIG.BASE_URL
 
 export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   const [tickets, setTickets] = useState([])
@@ -23,6 +22,8 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   const [selectedTicket, setSelectedTicket] = useState(null)
   const [modalData, setModalData] = useState(null)
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0, has_next: false, has_prev: false })
+  const [allTickets, setAllTickets] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
   const location = useLocation()
 
   useEffect(() => {
@@ -30,9 +31,28 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
     fetchAnalytics()
   }, [])
 
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!searchTerm) {
+        setTickets(allTickets)
+        return
+      }
+      const filtered = allTickets.filter(t => 
+        t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setTickets(filtered)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, allTickets])
+
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
       const response = await fetch(`${API_URL}/tickets`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       const tickets = data.tickets || data || []
       const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
@@ -51,19 +71,24 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   const fetchTickets = async (page = 1) => {
     try {
       const response = await fetch(`${API_URL}/tickets?page=${page}&per_page=10`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       if (data.tickets && Array.isArray(data.tickets)) {
         setTickets(data.tickets)
+        setAllTickets(data.tickets)
         setPagination(data.pagination)
       } else if (Array.isArray(data)) {
         setTickets(data)
+        setAllTickets(data)
         setPagination({ page: 1, pages: 1, total: data.length, has_next: false, has_prev: false })
       } else {
         setTickets([])
+        setAllTickets([])
       }
     } catch (err) {
       console.error('Failed to fetch tickets:', err)
       setTickets([])
+      setAllTickets([])
     }
   }
 
@@ -75,30 +100,59 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
         fetch(`${API_URL}/analytics/agent-workload`)
       ])
       
+      if (!statusRes.ok) throw new Error(`Status API: HTTP ${statusRes.status}`)
+      if (!unassignedRes.ok) throw new Error(`Unassigned API: HTTP ${unassignedRes.status}`)
+      if (!workloadRes.ok) throw new Error(`Workload API: HTTP ${workloadRes.status}`)
+      
       setStatusCounts(await statusRes.json())
       const unassigned = await unassignedRes.json()
       setUnassignedTickets(unassigned.tickets || [])
       setAgentWorkload(await workloadRes.json())
     } catch (err) {
       console.error('Failed to fetch analytics:', err)
+      setStatusCounts({})
+      setUnassignedTickets([])
+      setAgentWorkload([])
     }
   }
 
   const handleAssignTicket = async (ticketId, agentId) => {
     try {
-      await fetch(`${API_URL}/tickets/${ticketId}`, {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin',
         body: JSON.stringify({
           assigned_to: agentId,
           performed_by: user.id,
           performed_by_name: user.name
         })
       })
+      
+      if (!response.ok) {
+        let errorData = {}
+        try {
+          const contentType = response.headers.get('content-type')
+          if (contentType && contentType.includes('application/json')) {
+            errorData = await response.json()
+          }
+        } catch (parseError) {
+          console.warn('Failed to parse error response:', parseError)
+        }
+        throw new Error(errorData.message || `Assignment failed: HTTP ${response.status}`)
+      }
+      
+      // Success feedback
+      alert('Ticket assigned successfully!')
       fetchTickets()
       fetchAnalytics()
     } catch (err) {
       console.error('Failed to assign ticket:', err)
+      alert(`Failed to assign ticket: ${err.message}`)
     }
   }
 
@@ -109,17 +163,28 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
       const response = await fetch(`${API_URL}/export/tickets/excel`, {
         method: 'GET'
       })
+      
+      if (!response.ok) {
+        throw new Error(`Export failed: HTTP ${response.status}`)
+      }
+      
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `tickets_${new Date().toISOString().split('T')[0]}.csv`
-      document.body.appendChild(a)
-      a.click()
+      
+      // Use more efficient download without DOM manipulation
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `tickets_${new Date().toISOString().split('T')[0]}.csv`
+      link.style.display = 'none'
+      
+      // Trigger download and cleanup immediately
+      link.click()
       window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      
+      alert('Export completed successfully!')
     } catch (err) {
       console.error('Failed to export:', err)
+      alert(`Export failed: ${err.message}`)
     }
   }
 
@@ -152,19 +217,8 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
           <input
             type="text"
             placeholder="Search tickets by ID, title, or description..."
-            onChange={(e) => {
-              const search = e.target.value.toLowerCase()
-              if (!search) {
-                fetchTickets()
-                return
-              }
-              const filtered = tickets.filter(t => 
-                t.id.toLowerCase().includes(search) ||
-                t.title.toLowerCase().includes(search) ||
-                t.description.toLowerCase().includes(search)
-              )
-              setTickets(filtered)
-            }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>

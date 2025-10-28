@@ -6,9 +6,9 @@ import AgentPerformanceCard from '../analytics/AgentPerformanceCard'
 import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
 import Footer from '../common/Footer'
+import { API_CONFIG } from '../../config/api'
 
-
-const API_URL = 'https://hotfix.onrender.com/api'
+const API_URL = API_CONFIG.BASE_URL
 
 export default function TechnicalUserDashboard({ user, onLogout }) {
   // State management
@@ -18,15 +18,36 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
   const [modalData, setModalData] = useState(null)
   const [toastNotifications, setToastNotifications] = useState([])
   const [agentWorkload, setAgentWorkload] = useState([])
+  const [allTickets, setAllTickets] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchTickets()
     fetchAgentWorkload()
   }, [])
 
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!searchTerm) {
+        setTickets(allTickets)
+        return
+      }
+      const filtered = allTickets.filter(t => 
+        t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setTickets(filtered)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, allTickets])
+
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
       const response = await fetch(`${API_URL}/tickets`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       const tickets = data.tickets || data || []
       const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
@@ -42,43 +63,56 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
   const fetchTickets = async () => {
     try {
       const response = await fetch(`${API_URL}/tickets`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       if (data.tickets && Array.isArray(data.tickets)) {
         setTickets(data.tickets)
+        setAllTickets(data.tickets)
       } else if (Array.isArray(data)) {
         setTickets(data)
+        setAllTickets(data)
       } else {
         setTickets([])
+        setAllTickets([])
       }
     } catch (err) {
       console.error('Failed to fetch tickets:', err)
       setTickets([])
+      setAllTickets([])
     }
   }
 
   const fetchAgentWorkload = async () => {
     try {
       const response = await fetch(`${API_URL}/analytics/agent-workload`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       setAgentWorkload(data)
     } catch (err) {
       console.error('Failed to fetch agent workload:', err)
+      setAgentWorkload([])
     }
   }
 
   // Update ticket status (Set Pending, Resolve)
   const handleStatusUpdate = async (ticketId, newStatus) => {
     try {
-      await fetch(`${API_URL}/tickets/${ticketId}`, {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin',
         body: JSON.stringify({
           status: newStatus,
           performed_by: user.id,
           performed_by_name: user.name
         })
       })
-      fetchTickets()  // Refresh ticket list
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
+      fetchTickets()
     } catch (err) {
       console.error('Failed to update ticket:', err)
     }
@@ -87,15 +121,21 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
   // Assign ticket to agent
   const handleAssignTicket = async (ticketId, agentId) => {
     try {
-      await fetch(`${API_URL}/tickets/${ticketId}`, {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      const response = await fetch(`${API_URL}/tickets/${ticketId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin',
         body: JSON.stringify({
           assigned_to: agentId,
           performed_by: user.id,
           performed_by_name: user.name
         })
       })
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       fetchTickets()
       fetchAgentWorkload()
     } catch (err) {
@@ -107,9 +147,14 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
   const handleTakeAction = async (ticket) => {
     try {
       // Assign ticket to current user and set status to Open
-      await fetch(`${API_URL}/tickets/${ticket.id}`, {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+      const updateResponse = await fetch(`${API_URL}/tickets/${ticket.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin',
         body: JSON.stringify({
           assigned_to: user.id,
           status: 'Open',
@@ -117,11 +162,16 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           performed_by_name: user.name
         })
       })
+      if (!updateResponse.ok) throw new Error(`HTTP ${updateResponse.status}`)
 
       // Send message to ticket timeline notifying user
-      await fetch(`${API_URL}/messages`, {
+      const messageResponse = await fetch(`${API_URL}/messages`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin',
         body: JSON.stringify({
           ticket_id: ticket.id,
           sender_id: user.id,
@@ -130,12 +180,18 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           message: `🚨 SLA violation detected. I have taken ownership of this ticket and will prioritize resolution. You will receive updates as we progress.`
         })
       })
+      if (!messageResponse.ok) throw new Error(`HTTP ${messageResponse.status}`)
 
       // Send email notification to original user
       try {
-        await fetch(`${API_URL}/notifications/email`, {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        const emailResponse = await fetch(`${API_URL}/notifications/email`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+          },
+          credentials: 'same-origin',
           body: JSON.stringify({
             to_email: ticket.creator?.email || 'user@company.com',
             ticket_id: ticket.ticket_id || ticket.id,
@@ -143,6 +199,7 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
             message_type: 'assigned'
           })
         })
+        if (!emailResponse.ok) throw new Error(`HTTP ${emailResponse.status}`)
       } catch (emailErr) {
         console.error('Failed to send email notification:', emailErr)
       }
@@ -204,19 +261,8 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           <input
             type="text"
             placeholder="Search tickets by ID, title, or description..."
-            onChange={(e) => {
-              const search = e.target.value.toLowerCase()
-              if (!search) {
-                fetchTickets()
-                return
-              }
-              const filtered = tickets.filter(t => 
-                t.id.toLowerCase().includes(search) ||
-                t.title.toLowerCase().includes(search) ||
-                t.description.toLowerCase().includes(search)
-              )
-              setTickets(filtered)
-            }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>

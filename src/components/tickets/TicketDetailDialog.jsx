@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
+import { API_CONFIG } from '../../config/api'
 
-const API_URL = 'https://hotfix.onrender.com/api'
+const API_URL = API_CONFIG.BASE_URL
 
 export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpdate }) {
   const [messages, setMessages] = useState([])
@@ -30,20 +31,24 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
   const fetchMessages = async () => {
     try {
       const response = await fetch(`${API_URL}/messages/ticket/${ticket.id}/timeline`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       setMessages(Array.isArray(data) ? data : data.messages || [])
     } catch (err) {
       console.error('Failed to fetch messages:', err)
+      setMessages([])
     }
   }
 
   const fetchActivities = async () => {
     try {
       const response = await fetch(`${API_URL}/tickets/${ticket.id}/activities`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       setActivities(data || [])
     } catch (err) {
       console.error('Failed to fetch activities:', err)
+      setActivities([])
     }
   }
 
@@ -81,17 +86,27 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
       formData.append('user_id', currentUser.id)
       
       try {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
         const response = await fetch(`${API_URL}/upload/image`, {
           method: 'POST',
+          headers: {
+            ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+          },
+          credentials: 'same-origin',
           body: formData
         })
         
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
         const result = await response.json()
         if (result.success) {
           // Add image message to timeline
-          await fetch(`${API_URL}/messages`, {
+          const msgResponse = await fetch(`${API_URL}/messages`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+            },
+            credentials: 'same-origin',
             body: JSON.stringify({
               ticket_id: ticket.id,
               sender_id: currentUser.id,
@@ -101,6 +116,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
               image_url: result.url
             })
           })
+          if (!msgResponse.ok) throw new Error(`HTTP ${msgResponse.status}`)
           fetchMessages()
         }
       } catch (err) {
@@ -113,10 +129,16 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
       formData.append('uploaded_by', currentUser.id)
       
       try {
-        await fetch(`${API_URL}/files/upload`, {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+        const response = await fetch(`${API_URL}/files/upload`, {
           method: 'POST',
+          headers: {
+            ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+          },
+          credentials: 'same-origin',
           body: formData
         })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`)
         fetchAttachments()
       } catch (err) {
         console.error('Failed to upload file:', err)
@@ -132,9 +154,14 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
     if (!newMessage.trim()) return
 
     try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
       const response = await fetch(`${API_URL}/messages`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin',
         body: JSON.stringify({
           ticket_id: ticket.id,
           sender_id: currentUser.id,
@@ -155,9 +182,14 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
   const handleSaveChanges = async () => {
     try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
       await fetch(`${API_URL}/tickets/${ticket.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin',
         body: JSON.stringify({
           ...editedTicket,
           performed_by: currentUser.id,
@@ -236,7 +268,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                 {attachments.map(att => (
                   <a
                     key={att.id}
-                    href={`https://hotfix.onrender.com${att.download_url}`}
+                    href={`${API_URL.replace('/api', '')}${att.download_url}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm flex items-center gap-2"

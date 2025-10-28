@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
+import { API_CONFIG } from '../../config/api'
 
-const API_URL = 'https://hotfix.onrender.com/api'
+const API_URL = API_CONFIG.BASE_URL
 
 export default function EmailVerification() {
   const [searchParams] = useSearchParams()
@@ -23,25 +24,47 @@ export default function EmailVerification() {
 
   const verifyEmail = async (token) => {
     try {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
       const response = await fetch(`${API_URL}/auth/verify-email`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin',
         body: JSON.stringify({ token })
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setStatus('success')
-        setMessage('Email verified successfully! You can now log in.')
-        setTimeout(() => navigate('/'), 3000)
-      } else {
-        setStatus('error')
-        setMessage(data.error || 'Verification failed')
+      if (!response.ok) {
+        let errorData = {}
+        try {
+          const contentType = response.headers.get('content-type')
+          if (contentType && contentType.includes('application/json')) {
+            errorData = await response.json()
+          }
+        } catch (parseError) {
+          console.warn('Failed to parse error response as JSON:', parseError)
+        }
+        throw new Error(errorData.error || `HTTP ${response.status}`)
       }
+
+      let data = {}
+      try {
+        const contentType = response.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          data = await response.json()
+        }
+      } catch (parseError) {
+        console.warn('Failed to parse response as JSON:', parseError)
+      }
+      
+      setStatus('success')
+      setMessage('Email verified successfully! You can now log in.')
+      setTimeout(() => navigate('/'), 3000)
     } catch (err) {
+      console.error('Email verification error:', err)
       setStatus('error')
-      setMessage('Network error. Please try again.')
+      setMessage(err.message || 'Network error. Please try again.')
     }
   }
 

@@ -4,10 +4,12 @@ export default function ToastNotification({ notification, onClose }) {
   const [isVisible, setIsVisible] = useState(true)
 
   useEffect(() => {
+    if (!onClose) return
+    
     const timer = setTimeout(() => {
       setIsVisible(false)
-      setTimeout(onClose, 300) // Wait for fade out animation
-    }, 5000) // Auto-close after 5 seconds
+      setTimeout(onClose, 300)
+    }, 5000)
 
     return () => clearTimeout(timer)
   }, [onClose])
@@ -37,15 +39,15 @@ export default function ToastNotification({ notification, onClose }) {
     }
   }
 
-  if (!isVisible) return null
+  if (!isVisible || !notification) return null
 
   return (
     <div className={`fixed top-4 right-4 z-50 transform transition-all duration-300 ${
       isVisible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
     }`}>
-      <div className={`${getNotificationStyle(notification.type)} text-white p-4 rounded-lg shadow-lg border-l-4 max-w-sm`}>
+      <div className={`${getNotificationStyle(notification?.type)} text-white p-4 rounded-lg shadow-lg border-l-4 max-w-sm`}>
         <div className="flex items-start gap-3">
-          <span className="text-lg">{getIcon(notification.type)}</span>
+          <span className="text-lg">{getIcon(notification?.type)}</span>
           <div className="flex-1">
             <div className="flex justify-between items-start">
               <h4 className="font-semibold text-sm">
@@ -54,7 +56,7 @@ export default function ToastNotification({ notification, onClose }) {
               <button
                 onClick={() => {
                   setIsVisible(false)
-                  setTimeout(onClose, 300)
+                  if (onClose) setTimeout(onClose, 300)
                 }}
                 className="text-white hover:text-gray-200 ml-2"
               >
@@ -62,9 +64,9 @@ export default function ToastNotification({ notification, onClose }) {
               </button>
             </div>
             <p className="text-sm mt-1 opacity-90">
-              {notification.message}
+              {notification?.message || 'No message'}
             </p>
-            {notification.ticket_id && (
+            {notification?.ticket_id && (
               <p className="text-xs mt-2 opacity-75">
                 Ticket: {notification.ticket_id}
               </p>

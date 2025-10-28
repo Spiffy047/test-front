@@ -4,9 +4,9 @@ import DataModal from '../common/DataModal'
 import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
 import Footer from '../common/Footer'
+import { API_CONFIG } from '../../config/api'
 
-
-const API_URL = 'https://hotfix.onrender.com/api'
+const API_URL = API_CONFIG.BASE_URL
 
 export default function NormalUserDashboard({ user, onLogout }) {
   const [tickets, setTickets] = useState([])
@@ -14,14 +14,35 @@ export default function NormalUserDashboard({ user, onLogout }) {
   const [selectedTicket, setSelectedTicket] = useState(null)
   const [modalData, setModalData] = useState(null)
   const [toastNotifications, setToastNotifications] = useState([])
+  const [allTickets, setAllTickets] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     fetchTickets()
   }, [])
 
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!searchTerm) {
+        setTickets(allTickets)
+        return
+      }
+      const filtered = allTickets.filter(t => 
+        t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.description.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      setTickets(filtered)
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm, allTickets])
+
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
       const response = await fetch(`${API_URL}/tickets`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       const tickets = data.tickets || data || []
       const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
@@ -36,17 +57,22 @@ export default function NormalUserDashboard({ user, onLogout }) {
   const fetchTickets = async () => {
     try {
       const response = await fetch(`${API_URL}/tickets?created_by=${user.id}`)
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
       const data = await response.json()
       if (data.tickets && Array.isArray(data.tickets)) {
         setTickets(data.tickets)
+        setAllTickets(data.tickets)
       } else if (Array.isArray(data)) {
         setTickets(data)
+        setAllTickets(data)
       } else {
         setTickets([])
+        setAllTickets([])
       }
     } catch (err) {
       console.error('Failed to fetch tickets:', err)
       setTickets([])
+      setAllTickets([])
     }
   }
 
@@ -56,9 +82,14 @@ export default function NormalUserDashboard({ user, onLogout }) {
     
     try {
       // Create ticket first
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
       const ticketResponse = await fetch(`${API_URL}/tickets`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+        },
+        credentials: 'same-origin',
         body: JSON.stringify({
           title: formData.get('title'),
           description: formData.get('description'),
@@ -68,8 +99,17 @@ export default function NormalUserDashboard({ user, onLogout }) {
         })
       })
 
+      if (!ticketResponse.ok) throw new Error(`HTTP ${ticketResponse.status}`)
       if (ticketResponse.ok) {
-        const newTicket = await ticketResponse.json()
+        let newTicket = {}
+        try {
+          const contentType = ticketResponse.headers.get('content-type')
+          if (contentType && contentType.includes('application/json')) {
+            newTicket = await ticketResponse.json()
+          }
+        } catch (parseError) {
+          console.warn('Failed to parse ticket response as JSON:', parseError)
+        }
         
         // Handle file uploads if any
         const fileInput = e.target.querySelector('input[type="file"]')
@@ -81,10 +121,16 @@ export default function NormalUserDashboard({ user, onLogout }) {
             uploadFormData.append('uploaded_by', user.id)
             
             try {
-              await fetch(`${API_URL}/files/upload`, {
+              const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+              const uploadResponse = await fetch(`${API_URL}/files/upload`, {
                 method: 'POST',
+                headers: {
+                  ...(csrfToken && { 'X-CSRF-Token': csrfToken })
+                },
+                credentials: 'same-origin',
                 body: uploadFormData
               })
+              if (!uploadResponse.ok) throw new Error(`HTTP ${uploadResponse.status}`)
             } catch (uploadErr) {
               console.error('Failed to upload file:', uploadErr)
             }
@@ -128,19 +174,8 @@ export default function NormalUserDashboard({ user, onLogout }) {
           <input
             type="text"
             placeholder="Search tickets by ID, title, or description..."
-            onChange={(e) => {
-              const search = e.target.value.toLowerCase()
-              if (!search) {
-                fetchTickets()
-                return
-              }
-              const filtered = tickets.filter(t => 
-                t.id.toLowerCase().includes(search) ||
-                t.title.toLowerCase().includes(search) ||
-                t.description.toLowerCase().includes(search)
-              )
-              setTickets(filtered)
-            }}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>

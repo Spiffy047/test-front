@@ -11,6 +11,7 @@ import TechnicalSupervisorDashboard from './components/dashboards/TechnicalSuper
 import SystemAdminDashboard from './components/dashboards/SystemAdminDashboard'
 // Import email verification component for 2-step authentication
 import EmailVerification from './components/auth/EmailVerification'
+import FixTicketNumbers from './components/admin/FixTicketNumbers'
 import { API_CONFIG } from './config/api'
 import { secureApiRequest } from './utils/api'
 

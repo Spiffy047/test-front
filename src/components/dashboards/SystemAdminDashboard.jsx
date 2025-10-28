@@ -5,6 +5,7 @@ import UserForm from '../forms/UserForm'
 import NotificationBell from '../notifications/NotificationBell'
 import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import Footer from '../common/Footer'
+import FixTicketNumbers from '../admin/FixTicketNumbers'
 import { API_CONFIG } from '../../config/api'
 import { getRoleStyles } from '../../utils/styleHelpers'
 import { secureApiRequest } from '../../utils/api'
@@ -241,8 +242,9 @@ export default function SystemAdminDashboard({ user, onLogout }) {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <SLAAdherenceCard />
+              <FixTicketNumbers />
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold mb-4">System Health</h3>
                 <div className="space-y-3">

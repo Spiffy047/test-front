@@ -89,12 +89,77 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
     }
   }
 
+  // Take action on SLA violated ticket - assign to current user and notify original user
+  const handleTakeAction = async (ticket) => {
+    try {
+      // Assign ticket to current user and set status to Open
+      await fetch(`${API_URL}/tickets/${ticket.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assigned_to: user.id,
+          status: 'Open',
+          performed_by: user.id,
+          performed_by_name: user.name
+        })
+      })
+
+      // Send message to ticket timeline notifying user
+      await fetch(`${API_URL}/messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ticket_id: ticket.id,
+          sender_id: user.id,
+          sender_name: user.name,
+          sender_role: user.role,
+          message: `🚨 SLA violation detected. I have taken ownership of this ticket and will prioritize resolution. You will receive updates as we progress.`
+        })
+      })
+
+      // Send email notification to original user
+      try {
+        await fetch(`${API_URL}/notifications/email`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to_email: ticket.creator?.email || 'user@company.com',
+            ticket_id: ticket.ticket_id || ticket.id,
+            ticket_title: ticket.title,
+            message_type: 'assigned'
+          })
+        })
+      } catch (emailErr) {
+        console.error('Failed to send email notification:', emailErr)
+      }
+
+      fetchTickets()
+      fetchAgentWorkload()
+      
+      // Show success message
+      setToastNotifications(prev => [...prev, {
+        id: Date.now(),
+        type: 'success',
+        title: 'Action Taken',
+        message: `Ticket ${ticket.ticket_id || ticket.id} assigned to you. User has been notified.`
+      }])
+    } catch (err) {
+      console.error('Failed to take action:', err)
+      setToastNotifications(prev => [...prev, {
+        id: Date.now(),
+        type: 'error',
+        title: 'Action Failed',
+        message: 'Failed to take action on ticket. Please try again.'
+      }])
+    }
+  }
+
   // Filter tickets based on current view
   const myTickets = tickets.filter(t => t.assigned_to === user.id)
   const displayTickets = activeTab === 'myQueue' ? myTickets : tickets
 
   // Get tickets that have violated SLA for alert display
-  const slaViolationTickets = displayTickets.filter(t => t.sla_violated && t.status !== 'Closed')
+  const slaViolationTickets = tickets.filter(t => t.sla_violated && t.status !== 'Closed')
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -192,18 +257,21 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
           <div className="mb-6 bg-red-50 border-2 border-red-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-3">
               <span className="animate-pulse text-red-600 text-xl font-bold">!</span>
-              <h3 className="font-semibold text-red-900">SLA Violation Alert</h3>
+              <h3 className="font-semibold text-red-900">SLA Violation Alert ({slaViolationTickets.length})</h3>
             </div>
             <div className="space-y-2">
               {slaViolationTickets.map(ticket => (
                 <div key={ticket.id} className="flex justify-between items-center bg-white p-3 rounded">
                   <div>
-                    <span className="font-medium">{ticket.id}</span>
+                    <span className="font-medium">{ticket.ticket_id || ticket.id}</span>
                     <span className="text-gray-600 ml-2">{ticket.title}</span>
+                    <div className="text-xs text-gray-500 mt-1">
+                      Priority: {ticket.priority} | Category: {ticket.category}
+                    </div>
                   </div>
                   <div className="flex gap-2">
                     <button
-                      onClick={() => handleStatusUpdate(ticket.id, 'Open')}
+                      onClick={() => handleTakeAction(ticket)}
                       className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700"
                     >
                       Take Action

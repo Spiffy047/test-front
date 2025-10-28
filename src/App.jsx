@@ -14,7 +14,7 @@ function App() {
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
 
-  const handleLogin = async (data) => {
+  const handleLogin = async (formData) => {
     setLoading(true)
     setError('')
 
@@ -22,17 +22,17 @@ function App() {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(formData)
       })
 
-      const data = await response.json()
-      console.log('Login response:', data) // Debug log
+      const responseData = await response.json()
+      console.log('Login response:', responseData) // Debug log
       
-      if (response.ok && (data.success || data.access_token)) {
-        setUser(data.user)
-        localStorage.setItem('token', data.access_token || data.token)
+      if (response.ok && (responseData.success || responseData.access_token)) {
+        setUser(responseData.user)
+        localStorage.setItem('token', responseData.access_token || responseData.token)
       } else {
-        throw new Error(data.message || 'Invalid email or password')
+        throw new Error(responseData.message || 'Invalid email or password')
       }
     } catch (err) {
       console.error('Login error:', err) // Debug log

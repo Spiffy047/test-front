@@ -327,39 +327,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6 mb-6">
-              <h3 className="text-lg font-semibold mb-4">Agents with SLA Violations</h3>
-              <div className="space-y-3">
-                {agentWorkload
-                  .filter(agent => {
-                    const agentViolations = tickets.filter(t => t.assigned_to === agent.agent_id && t.sla_violated).length
-                    return agentViolations > 0
-                  })
-                  .map(agent => {
-                    const agentViolations = tickets.filter(t => t.assigned_to === agent.agent_id && t.sla_violated)
-                    return (
-                      <div key={agent.agent_id} className="flex justify-between items-center p-3 bg-red-50 rounded border border-red-200">
-                        <div>
-                          <div className="font-medium text-gray-900">{agent.name}</div>
-                          <div className="text-sm text-gray-600">{agent.email}</div>
-                        </div>
-                        <div className="text-right">
-                          <div className="text-2xl font-bold text-red-600">{agentViolations.length}</div>
-                          <div className="text-xs text-gray-600">SLA violations</div>
-                        </div>
-                      </div>
-                    )
-                  })}
-                {agentWorkload.filter(agent => {
-                  const agentViolations = tickets.filter(t => t.assigned_to === agent.agent_id && t.sla_violated).length
-                  return agentViolations > 0
-                }).length === 0 && (
-                  <div className="text-center text-gray-500 py-4">
-                    No agents with SLA violations
-                  </div>
-                )}
-              </div>
-            </div>
+
 
             <div onClick={() => setModalData({ title: 'SLA Adherence Details', data: tickets })}>
               <SLAAdherenceCard />

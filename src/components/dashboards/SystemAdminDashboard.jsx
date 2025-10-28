@@ -16,6 +16,8 @@ export default function SystemAdminDashboard({ user, onLogout }) {
   const [showUserModal, setShowUserModal] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
   const [selectedTicket, setSelectedTicket] = useState(null)
+  const [migrationStatus, setMigrationStatus] = useState(null)
+  const [migrationLoading, setMigrationLoading] = useState(false)
 
   useEffect(() => {
     fetchUsers()
@@ -32,6 +34,28 @@ export default function SystemAdminDashboard({ user, onLogout }) {
       }
     } catch (err) {
       console.error('Failed to find ticket:', err)
+    }
+  }
+
+  const handleMigrateTicketIds = async () => {
+    setMigrationLoading(true)
+    setMigrationStatus(null)
+    
+    try {
+      const response = await fetch(`${API_URL}/admin/migrate-ticket-ids`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      const result = await response.json()
+      setMigrationStatus(result)
+    } catch (err) {
+      setMigrationStatus({
+        success: false,
+        error: 'Failed to connect to migration endpoint'
+      })
+    } finally {
+      setMigrationLoading(false)
     }
   }
 
@@ -205,6 +229,52 @@ export default function SystemAdminDashboard({ user, onLogout }) {
                     <span className="text-green-600 font-semibold">Active</span>
                   </div>
                 </div>
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-lg shadow p-6">
+              <h3 className="text-lg font-semibold mb-4">Database Migration</h3>
+              <div className="space-y-4">
+                <p className="text-gray-600">Migrate existing tickets to proper TKT-XXXX format (TKT-1001, TKT-1002, etc.)</p>
+                
+                <button
+                  onClick={handleMigrateTicketIds}
+                  disabled={migrationLoading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
+                >
+                  {migrationLoading ? 'Migrating...' : 'Migrate Ticket IDs'}
+                </button>
+                
+                {migrationStatus && (
+                  <div className={`p-4 rounded-md ${
+                    migrationStatus.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'
+                  }`}>
+                    <div className={`font-medium ${
+                      migrationStatus.success ? 'text-green-800' : 'text-red-800'
+                    }`}>
+                      {migrationStatus.success ? '✅ Migration Successful' : '❌ Migration Failed'}
+                    </div>
+                    <div className={`text-sm mt-1 ${
+                      migrationStatus.success ? 'text-green-700' : 'text-red-700'
+                    }`}>
+                      {migrationStatus.message || migrationStatus.error}
+                    </div>
+                    {migrationStatus.tickets && migrationStatus.tickets.length > 0 && (
+                      <div className="mt-3">
+                        <div className="text-sm font-medium text-green-800 mb-2">
+                          Migrated {migrationStatus.migrated} tickets:
+                        </div>
+                        <div className="max-h-32 overflow-y-auto text-xs text-green-700 space-y-1">
+                          {migrationStatus.tickets.map((ticket, index) => (
+                            <div key={index}>
+                              {ticket.old_id} → {ticket.new_id}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>

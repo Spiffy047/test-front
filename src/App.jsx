@@ -7,6 +7,7 @@ import TechnicalSupervisorDashboard from './components/dashboards/TechnicalSuper
 import SystemAdminDashboard from './components/dashboards/SystemAdminDashboard'
 import EmailVerification from './components/auth/EmailVerification'
 
+
 const API_URL = 'https://hotfix.onrender.com/api'
 
 function App() {
@@ -14,16 +15,7 @@ function App() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   
-  // Check if we're on verification page
-  if (window.location.pathname === '/verify-email') {
-    return (
-      <Router>
-        <Routes>
-          <Route path="/verify-email" element={<EmailVerification />} />
-        </Routes>
-      </Router>
-    )
-  }
+
   
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
 
@@ -41,9 +33,6 @@ function App() {
       const responseData = await response.json()
       
       if (response.ok && (responseData.success || responseData.access_token)) {
-        if (responseData.user && !responseData.user.is_verified) {
-          throw new Error('Please verify your email before logging in. Check your inbox for verification link.')
-        }
         setUser(responseData.user)
         localStorage.setItem('token', responseData.access_token || responseData.token)
       } else {

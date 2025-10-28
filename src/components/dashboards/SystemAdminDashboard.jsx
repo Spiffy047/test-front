@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import SLAAdherenceCard from '../analytics/SLAAdherenceCard'
 import AgentPerformanceScorecard from '../analytics/AgentPerformanceScorecard'
+import UserForm from '../forms/UserForm'
 import Footer from '../common/Footer'
 
 
@@ -284,60 +285,11 @@ export default function SystemAdminDashboard({ user, onLogout }) {
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
             <div className="p-6">
               <h2 className="text-xl font-bold mb-4">{editingUser ? 'Edit User' : 'Add User'}</h2>
-              <form onSubmit={handleSaveUser} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input
-                    type="text"
-                    name="name"
-                    defaultValue={editingUser?.name}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    defaultValue={editingUser?.email}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
-                  <select
-                    name="role"
-                    defaultValue={editingUser?.role || 'Normal User'}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                  >
-                    <option value="Normal User">Normal User</option>
-                    <option value="Technical User">Technical User</option>
-                    <option value="Technical Supervisor">Technical Supervisor</option>
-                    <option value="System Admin">System Admin</option>
-                  </select>
-                </div>
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="submit"
-                    className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
-                  >
-                    Save
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowUserModal(false)
-                      setEditingUser(null)
-                    }}
-                    className="flex-1 bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+              <UserForm user={editingUser} onSubmit={handleSaveUser} onCancel={() => {
+                setShowUserModal(false)
+                setEditingUser(null)
+              }} />
+
             </div>
           </div>
         </div>

@@ -39,35 +39,31 @@ export default function SystemAdminDashboard({ user, onLogout }) {
     }
   }
 
-  const handleSaveUser = async (e) => {
-    e.preventDefault()
-    const formData = new FormData(e.target)
-    
-    const userData = {
-      name: formData.get('name'),
-      email: formData.get('email'),
-      role: formData.get('role')
-    }
-
+  const handleSaveUser = async (userData) => {
     try {
-      if (editingUser) {
-        await fetch(`${API_URL}/users/${editingUser.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(userData)
-        })
+      const response = editingUser
+        ? await fetch(`${API_URL}/users/${editingUser.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+          })
+        : await fetch(`${API_URL}/users`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(userData)
+          })
+      
+      if (response.ok) {
+        setShowUserModal(false)
+        setEditingUser(null)
+        fetchUsers()
       } else {
-        await fetch(`${API_URL}/users`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(userData)
-        })
+        const error = await response.json()
+        alert(error.error || 'Failed to save user')
       }
-      setShowUserModal(false)
-      setEditingUser(null)
-      fetchUsers()
     } catch (err) {
       console.error('Failed to save user:', err)
+      alert('Failed to save user')
     }
   }
 

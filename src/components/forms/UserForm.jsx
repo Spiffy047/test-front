@@ -27,13 +27,7 @@ export default function UserForm({ user, onSubmit, onCancel }) {
   }, [user, reset])
 
   const handleFormSubmit = (data) => {
-    const formData = new FormData()
-    formData.append('name', data.name)
-    formData.append('email', data.email)
-    formData.append('role', data.role)
-    
-    const event = { preventDefault: () => {}, target: { elements: formData } }
-    onSubmit(event)
+    onSubmit(data)
   }
 
   return (
@@ -95,6 +89,29 @@ export default function UserForm({ user, onSubmit, onCancel }) {
           <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
         )}
       </div>
+
+      {!user && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+          <input
+            type="password"
+            {...register('password', { 
+              required: !user ? 'Password is required' : false,
+              minLength: {
+                value: 6,
+                message: 'Password must be at least 6 characters'
+              }
+            })}
+            className={`w-full px-4 py-2 border rounded-md ${
+              errors.password ? 'border-red-300' : 'border-gray-300'
+            }`}
+            placeholder="Enter password for new user"
+          />
+          {errors.password && (
+            <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+          )}
+        </div>
+      )}
 
       <div className="flex gap-3 pt-4">
         <button

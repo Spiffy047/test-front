@@ -2,11 +2,11 @@
 
 React + TypeScript frontend for the IT ServiceDesk platform with role-based dashboards, real-time chat, and comprehensive analytics.
 
-## 🚀 Live Demo
+## Live Demo
 
 **URL**: https://hotfix-ochre.vercel.app
 
-## 🛠 Technology Stack
+## Technology Stack
 
 - **React 18** with TypeScript
 - **Vite** - Fast build tool and dev server
@@ -17,28 +17,28 @@ React + TypeScript frontend for the IT ServiceDesk platform with role-based dash
 - **Radix UI** - Accessible component primitives
 - **Lucide React** - Icon library
 
-## ✨ Key Features
+## Key Features
 
-### 🎭 Role-Based Dashboards
+### Role-Based Dashboards
 - **Normal User**: Personal ticket management
 - **Technical User**: Agent portal with SLA monitoring
 - **Technical Supervisor**: Team analytics and oversight
 - **System Admin**: Complete system management
 
-### 💬 Interactive Components
+### Interactive Components
 - Real-time ticket chat with timeline view
 - Image upload and display with Cloudinary
 - Responsive data tables with pagination
 - Interactive charts and analytics
 - Toast notifications and alerts
 
-### 📊 Analytics & Reporting
+### Analytics & Reporting
 - SLA adherence tracking
 - Ticket aging analysis
 - Agent performance scorecards
 - Real-time dashboard updates
 
-## 🚀 Local Development
+## Local Development
 
 ```bash
 # Clone and setup
@@ -57,14 +57,14 @@ npm run dev
 # Opens at http://localhost:5173
 ```
 
-## 🔧 Environment Variables
+## Environment Variables
 
 ```bash
 # .env.local
 VITE_API_URL=http://localhost:5001/api
 ```
 
-## 📦 Dependencies
+## Dependencies
 
 ```json
 {
@@ -91,7 +91,7 @@ VITE_API_URL=http://localhost:5001/api
 }
 ```
 
-## 🎨 Component Structure
+## Component Structure
 
 ```
 src/
@@ -127,7 +127,7 @@ src/
 - `TicketAgingAnalysis.jsx` - Aging analysis charts
 - `AgentPerformanceScorecard.jsx` - Performance metrics
 
-## 🎯 User Roles & Features
+## User Roles & Features
 
 ### Normal User
 - View and create personal tickets
@@ -153,7 +153,7 @@ src/
 - Advanced analytics dashboard
 - User role assignment
 
-## 🔒 Authentication & Security
+## Authentication & Security
 
 - JWT token-based authentication
 - Role-based access control (RBAC)
@@ -161,14 +161,14 @@ src/
 - Secure API communication with CORS
 - Form validation with React Hook Form
 
-## 📱 Responsive Design
+## Responsive Design
 
 - Mobile-first approach with Tailwind CSS
 - Responsive breakpoints for all screen sizes
 - Touch-friendly interactions
 - Accessible navigation and components
 
-## 🚀 Build & Deployment
+## Build & Deployment
 
 ### Development
 ```bash
@@ -187,7 +187,7 @@ npm run build
 # Or connect GitHub repository for auto-deployment
 ```
 
-## 🎨 Styling & Theming
+## Styling & Theming
 
 ### Tailwind CSS Configuration
 - Custom color palette for branding
@@ -201,14 +201,14 @@ npm run build
 - Accessible color contrasts
 - Professional UI/UX patterns
 
-## 📊 State Management
+## State Management
 
 - React hooks for local state
 - Context API for global state (if needed)
 - Form state with React Hook Form
 - API state management with fetch
 
-## 🧪 Development Workflow
+## Development Workflow
 
 1. **Component Development**
    - Create reusable components in appropriate directories
@@ -225,14 +225,14 @@ npm run build
    - Handle loading and error states
    - Implement proper data validation
 
-## 📈 Performance Optimizations
+## Performance Optimizations
 
 - Code splitting with React.lazy (ready for implementation)
 - Image optimization via Cloudinary
 - Efficient re-renders with React.memo
 - Optimized bundle size with Vite
 
-## 🔮 Future Enhancements
+## Future Enhancements
 
 - Progressive Web App (PWA) features
 - Real-time updates with WebSockets
@@ -240,6 +240,6 @@ npm run build
 - Offline capabilities
 - Push notifications
 
-## 📄 License
+## License
 
 MIT License - see LICENSE file for details.

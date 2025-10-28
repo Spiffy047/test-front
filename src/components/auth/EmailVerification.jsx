@@ -54,7 +54,7 @@ export default function EmailVerification() {
         
         {status === 'success' && (
           <div>
-            <div className="text-green-600 text-4xl mb-4">✓</div>
+            <div className="text-green-600 text-4xl mb-4">[SUCCESS]</div>
             <p className="text-green-600 font-medium">{message}</p>
             <p className="text-sm text-gray-600 mt-2">Redirecting to login...</p>
           </div>
@@ -62,7 +62,7 @@ export default function EmailVerification() {
         
         {status === 'error' && (
           <div>
-            <div className="text-red-600 text-4xl mb-4">✗</div>
+            <div className="text-red-600 text-4xl mb-4">[ERROR]</div>
             <p className="text-red-600 font-medium">{message}</p>
             <button
               onClick={() => navigate('/')}

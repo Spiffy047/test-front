@@ -96,7 +96,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
               sender_id: currentUser.id,
               sender_name: currentUser.name,
               sender_role: currentUser.role,
-              message: `📷 Uploaded image: ${file.name}`,
+              message: `[Image] Uploaded image: ${file.name}`,
               image_url: result.url
             })
           })
@@ -403,7 +403,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                 disabled={uploading}
                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm disabled:opacity-50"
               >
-                {uploading ? 'Uploading...' : '📎 Attach'}
+                {uploading ? 'Uploading...' : 'Attach'}
               </button>
               <button
                 type="submit"

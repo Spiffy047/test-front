@@ -93,21 +93,6 @@ function App() {
               </div>
             )}
 
-            <div className="bg-blue-50 border border-blue-200 rounded-md p-3 text-sm">
-              <p className="font-medium text-blue-900 mb-2">Demo Credentials:</p>
-              <div className="grid grid-cols-2 gap-2 text-blue-800">
-                <div>
-                  <p className="font-medium">Admin:</p>
-                  <p className="text-xs">admin@company.com</p>
-                </div>
-                <div>
-                  <p className="font-medium">Agent:</p>
-                  <p className="text-xs">agent@company.com</p>
-                </div>
-              </div>
-              <p className="text-xs text-blue-700 mt-2">Password: password123</p>
-            </div>
-
             <button
               type="submit"
               disabled={loading}
@@ -116,29 +101,6 @@ function App() {
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('admin@company.com')
-                setPassword('password123')
-              }}
-              className="text-sm text-blue-600 hover:text-blue-800 mr-4"
-            >
-              Fill Admin
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setEmail('agent@company.com')
-                setPassword('password123')
-              }}
-              className="text-sm text-blue-600 hover:text-blue-800"
-            >
-              Fill Agent
-            </button>
-          </div>
         </div>
       </div>
     )

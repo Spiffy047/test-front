@@ -7,11 +7,18 @@ import { API_CONFIG } from '../config/api'
 const API_URL = API_CONFIG.BASE_URL
 
 // Allowed domains for API calls (prevent SSRF)
-const ALLOWED_DOMAINS = [
-  new URL(API_CONFIG.BASE_URL).hostname,
-  'localhost',
-  '127.0.0.1'
-]
+const getAllowedDomains = () => {
+  try {
+    return [
+      new URL(API_CONFIG.BASE_URL).hostname,
+      'localhost',
+      '127.0.0.1'
+    ]
+  } catch (error) {
+    console.error('Failed to parse API base URL:', error)
+    return ['localhost', '127.0.0.1']
+  }
+}
 
 // Private IP ranges to block (SSRF prevention)
 const PRIVATE_IP_RANGES = [
@@ -37,7 +44,8 @@ const isUrlSafe = (url) => {
     }
     
     // Check if domain is in allowlist
-    if (!ALLOWED_DOMAINS.includes(parsedUrl.hostname)) {
+    const allowedDomains = getAllowedDomains()
+    if (!allowedDomains.includes(parsedUrl.hostname)) {
       return false
     }
     
@@ -63,6 +71,7 @@ export const secureApiRequest = async (endpoint, options = {}) => {
   
   // Validate URL to prevent SSRF
   if (!isUrlSafe(fullUrl)) {
+    console.error('SSRF attempt blocked:', fullUrl)
     throw new Error('Invalid or unsafe URL detected')
   }
   

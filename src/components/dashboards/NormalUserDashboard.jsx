@@ -94,33 +94,32 @@ export default function NormalUserDashboard({ user, onLogout }) {
         })
       })
         
-        // Handle file uploads if any
-        const fileInput = e.target.querySelector('input[type="file"]')
-        if (fileInput && fileInput.files.length > 0) {
-          for (let file of fileInput.files) {
-            const uploadFormData = new FormData()
-            uploadFormData.append('file', file)
-            uploadFormData.append('ticket_id', newTicket.id)
-            uploadFormData.append('uploaded_by', user.id)
-            
-            try {
-              await secureApiRequest('/files/upload', {
-                method: 'POST',
-                body: uploadFormData,
-                headers: {} // Let browser set content-type for FormData
-              })
-            } catch (uploadErr) {
-              console.error('Failed to upload file:', uploadErr)
-              alert(`Failed to upload ${file.name}: ${uploadErr.message}`)
-            }
+      // Handle file uploads if any
+      const fileInput = e.target.querySelector('input[type="file"]')
+      if (fileInput && fileInput.files.length > 0) {
+        for (let file of fileInput.files) {
+          const uploadFormData = new FormData()
+          uploadFormData.append('file', file)
+          uploadFormData.append('ticket_id', newTicket.id)
+          uploadFormData.append('uploaded_by', user.id)
+          
+          try {
+            await secureApiRequest('/files/upload', {
+              method: 'POST',
+              body: uploadFormData,
+              headers: {} // Let browser set content-type for FormData
+            })
+          } catch (uploadErr) {
+            console.error('Failed to upload file:', uploadErr)
+            alert(`Failed to upload ${file.name}: ${uploadErr.message}`)
           }
         }
-        
-        setShowCreateModal(false)
-        fetchTickets()
-        e.target.reset()
-        alert('Ticket created successfully!')
       }
+      
+      setShowCreateModal(false)
+      fetchTickets()
+      e.target.reset()
+      alert('Ticket created successfully!')
     } catch (err) {
       console.error('Failed to create ticket:', err)
       alert(`Failed to create ticket: ${err.message}`)

@@ -12,6 +12,7 @@ import SystemAdminDashboard from './components/dashboards/SystemAdminDashboard'
 // Import email verification component for 2-step authentication
 import EmailVerification from './components/auth/EmailVerification'
 import { API_CONFIG } from './config/api'
+import { secureApiRequest } from './utils/api'
 
 // Backend API base URL for all API calls
 const API_URL = API_CONFIG.BASE_URL
@@ -42,32 +43,14 @@ function App() {
     setError('')
 
     try {
-      // Make API call to authenticate user
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      const response = await fetch(`${API_URL}/auth/login`, {
+      // Make API call to authenticate user using secure wrapper
+      const responseData = await secureApiRequest('/auth/login', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify(formData) // Send email and password as JSON
+        body: JSON.stringify(formData)
       })
-
-      // Parse JSON response from server with error handling
-      let responseData = {}
-      try {
-        const contentType = response.headers.get('content-type')
-        if (contentType && contentType.includes('application/json')) {
-          responseData = await response.json()
-        }
-      } catch (parseError) {
-        console.warn('Failed to parse response as JSON:', parseError)
-        throw new Error('Invalid server response')
-      }
       
       // Check if login was successful
-      if (response.ok && (responseData?.success || responseData?.access_token)) {
+      if (responseData?.success || responseData?.access_token) {
         // Store user data in state and JWT token in localStorage
         setUser(responseData?.user || null)
         localStorage.setItem('token', responseData?.access_token || responseData?.token || '')

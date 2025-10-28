@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { API_CONFIG } from '../../config/api'
 import { getPerformanceRatingStyles } from '../../utils/styleHelpers'
+import { secureApiRequest } from '../../utils/api'
 
 // API base URL for backend communication
 const API_URL = API_CONFIG.BASE_URL
@@ -23,9 +24,7 @@ export default function AgentPerformanceScorecard() {
       try {
         setLoading(true)
         setError(null)
-        const res = await fetch(`${API_URL}/analytics/agent-performance-detailed`)
-        if (!res.ok) throw new Error(`Failed to load agent data (${res.status})`)
-        const data = await res.json()
+        const data = await secureApiRequest('/analytics/agent-performance-detailed')
         setAgents(Array.isArray(data) ? data : [])
       } catch (error) {
         console.error('Failed to fetch agent performance data:', error)

@@ -83,27 +83,14 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
       formData.append('user_id', currentUser.id)
       
       try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-        const response = await fetch(`${API_URL}/upload/image`, {
+        const result = await secureApiRequest('/upload/image', {
           method: 'POST',
-          headers: {
-            ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-          },
-          credentials: 'same-origin',
           body: formData
         })
-        
-        if (!response.ok) throw new Error(`Image upload failed (${response.status})`)
-        const result = await response.json()
         if (result.success) {
           // Add image message to timeline
-          const msgResponse = await fetch(`${API_URL}/messages`, {
+          await secureApiRequest('/messages', {
             method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-            },
-            credentials: 'same-origin',
             body: JSON.stringify({
               ticket_id: ticket.id,
               sender_id: currentUser.id,
@@ -113,7 +100,6 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
               image_url: result.url
             })
           })
-          if (!msgResponse.ok) throw new Error(`Message posting failed (${msgResponse.status})`)
           fetchMessages()
         }
       } catch (err) {
@@ -127,16 +113,10 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
       formData.append('uploaded_by', currentUser.id)
       
       try {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-        const response = await fetch(`${API_URL}/files/upload`, {
+        await secureApiRequest('/files/upload', {
           method: 'POST',
-          headers: {
-            ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-          },
-          credentials: 'same-origin',
           body: formData
         })
-        if (!response.ok) throw new Error(`File upload failed (${response.status})`)
         fetchAttachments()
         alert('File uploaded successfully!')
       } catch (err) {
@@ -154,14 +134,8 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
     if (!newMessage.trim()) return
 
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      const response = await fetch(`${API_URL}/messages`, {
+      await secureApiRequest('/messages', {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin',
         body: JSON.stringify({
           ticket_id: ticket.id,
           sender_id: currentUser.id,
@@ -170,13 +144,8 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
           message: newMessage
         })
       })
-      
-      if (response.ok) {
-        setNewMessage('')
-        await fetchMessages()
-      } else {
-        throw new Error(`Message sending failed (${response.status})`)
-      }
+      setNewMessage('')
+      await fetchMessages()
     } catch (err) {
       console.error('Failed to send message:', err)
       alert(`Failed to send message: ${err.message}`)
@@ -185,14 +154,8 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
   const handleSaveChanges = async () => {
     try {
-      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
-      await fetch(`${API_URL}/tickets/${ticket.id}`, {
+      await secureApiRequest(`/tickets/${ticket.id}`, {
         method: 'PUT',
-        headers: { 
-          'Content-Type': 'application/json',
-          ...(csrfToken && { 'X-CSRF-Token': csrfToken })
-        },
-        credentials: 'same-origin',
         body: JSON.stringify({
           ...editedTicket,
           performed_by: currentUser.id,

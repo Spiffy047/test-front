@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { API_CONFIG } from '../../config/api'
 import { getPerformanceRatingStyles } from '../../utils/styleHelpers'
+import { secureApiRequest } from '../../utils/api'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -16,9 +17,7 @@ export default function AgentPerformanceCard({ agentId, onCardClick, tickets }) 
       try {
         setLoading(true)
         setError(null)
-        const res = await fetch(`${API_URL}/analytics/agent-performance-detailed`)
-        if (!res.ok) throw new Error(`Failed to load performance data (${res.status})`)
-        const data = await res.json()
+        const data = await secureApiRequest('/analytics/agent-performance-detailed')
         const agentData = Array.isArray(data) ? data.find(a => a?.agent_id === agentId) : null
         setPerformance(agentData || null)
       } catch (error) {
@@ -58,7 +57,10 @@ export default function AgentPerformanceCard({ agentId, onCardClick, tickets }) 
 
   if (!performance) return null
 
-  const ratingStyles = getPerformanceRatingStyles(performance?.performance_rating)
+  const ratingStyles = useMemo(() => 
+    getPerformanceRatingStyles(performance?.performance_rating), 
+    [performance?.performance_rating]
+  )
 
   return (
     <div className="bg-white rounded-lg shadow p-6">

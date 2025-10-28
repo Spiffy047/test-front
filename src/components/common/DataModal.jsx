@@ -29,7 +29,7 @@ export default function DataModal({ title, data, onClose }) {
   return (
     <div className={overlayClasses} onClick={onClose}>
       <div className={modalClasses} style={{maxWidth: '76rem'}} onClick={e => e.stopPropagation()}>
-        <ModalHeader title={title} onClose={onClose}
+        <ModalHeader title={title} onClose={onClose} />
         <div className="p-6 overflow-y-auto max-h-[calc(80vh-80px)]">
           {!Array.isArray(data) || data.length === 0 ? (
             <div className="text-center text-gray-500 py-8">No data available</div>

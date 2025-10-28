@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { API_CONFIG } from '../../config/api'
+import { secureApiRequest } from '../../utils/api'
 
 const API_BASE_URL = API_CONFIG.BASE_URL
 
@@ -21,18 +22,19 @@ export default function RealtimeSLADashboard({ onCardClick }) {
     try {
       setLoading(true)
       setError(null)
-      const [slaResponse, ticketsResponse] = await Promise.all([
-        fetch(`${API_BASE_URL}/sla/realtime-adherence`),
-        fetch(`${API_BASE_URL}/tickets`)
+      const [slaData, ticketsData] = await Promise.all([
+        secureApiRequest('/sla/realtime-adherence').catch(err => {
+          console.error('Failed to fetch SLA data:', err)
+          return {}
+        }),
+        secureApiRequest('/tickets').catch(err => {
+          console.error('Failed to fetch tickets:', err)
+          return []
+        })
       ])
       
-      if (!slaResponse.ok) throw new Error(`Failed to load SLA data (${slaResponse.status})`)
-      if (!ticketsResponse.ok) throw new Error(`Failed to load tickets (${ticketsResponse.status})`)
-      
-      const data = await slaResponse.json()
-      const tickets = await ticketsResponse.json()
-      setSlaData(data || {})
-      setAllTickets(Array.isArray(tickets) ? tickets : [])
+      setSlaData(slaData || {})
+      setAllTickets(Array.isArray(ticketsData) ? ticketsData : [])
       setLastUpdate(new Date())
     } catch (err) {
       console.error('Failed to fetch SLA data:', err)

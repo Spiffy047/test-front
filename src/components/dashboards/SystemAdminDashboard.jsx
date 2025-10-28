@@ -118,37 +118,40 @@ export default function SystemAdminDashboard({ user, onLogout }) {
 
   const fetchSystemStats = async () => {
     try {
-      const [tickets, agents] = await Promise.all([
-        secureApiRequest('/tickets'),
-        secureApiRequest('/users?role=Technical User,Technical Supervisor')
+      const [ticketsResponse, agentsResponse] = await Promise.all([
+        secureApiRequest('/tickets').catch(err => {
+          console.error('Failed to fetch tickets:', err)
+          return { tickets: [] }
+        }),
+        secureApiRequest('/users?role=Technical User,Technical Supervisor').catch(err => {
+          console.error('Failed to fetch agents:', err)
+          return { users: [] }
+        })
       ])
       
-      if (tickets && agents) {
-        
-        const ticketList = tickets.tickets || tickets || []
-        const agentList = agents.users || agents || []
-        
-        const activeTickets = ticketList.filter(t => t.status !== 'Closed').length
-        const totalAgents = agentList.filter(u => 
-          u.role === 'Technical User' || u.role === 'Technical Supervisor'
-        ).length
-        
-        // Calculate average resolution time from closed tickets
-        const closedTickets = ticketList.filter(t => t.status === 'Closed' && t.resolved_at)
-        const avgResolution = closedTickets.length > 0 
-          ? closedTickets.reduce((sum, ticket) => {
-              const created = new Date(ticket.created_at)
-              const resolved = new Date(ticket.resolved_at)
-              return sum + (resolved - created) / (1000 * 60 * 60) // hours
-            }, 0) / closedTickets.length
-          : 0
-        
-        setSystemStats({
-          totalAgents,
-          activeTickets,
-          avgResolution: avgResolution.toFixed(1)
-        })
-      }
+      const ticketList = ticketsResponse?.tickets || ticketsResponse || []
+      const agentList = agentsResponse?.users || agentsResponse || []
+      
+      const activeTickets = ticketList.filter(t => t.status !== 'Closed').length
+      const totalAgents = agentList.filter(u => 
+        u.role === 'Technical User' || u.role === 'Technical Supervisor'
+      ).length
+      
+      // Calculate average resolution time from closed tickets
+      const closedTickets = ticketList.filter(t => t.status === 'Closed' && t.resolved_at)
+      const avgResolution = closedTickets.length > 0 
+        ? closedTickets.reduce((sum, ticket) => {
+            const created = new Date(ticket.created_at)
+            const resolved = new Date(ticket.resolved_at)
+            return sum + (resolved - created) / (1000 * 60 * 60) // hours
+          }, 0) / closedTickets.length
+        : 0
+      
+      setSystemStats({
+        totalAgents,
+        activeTickets,
+        avgResolution: avgResolution.toFixed(1)
+      })
     } catch (err) {
       console.error('Failed to fetch system stats:', err)
     }

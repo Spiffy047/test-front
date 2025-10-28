@@ -131,6 +131,14 @@ function App() {
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
+            
+            <button
+              type="button"
+              onClick={() => handleLogin({email: 'admin@company.com', password: 'password123'})}
+              className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 font-medium text-sm"
+            >
+              Quick Test Login (Admin)
+            </button>
           </form>
         </div>
       </div>

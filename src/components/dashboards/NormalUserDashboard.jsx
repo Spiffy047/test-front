@@ -43,13 +43,26 @@ export default function NormalUserDashboard({ user, onLogout }) {
 
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
-      const data = await secureApiRequest('/tickets')
-      const tickets = data.tickets || data || []
-      const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
+      // First try to find in current tickets
+      let ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
+      
+      // If not found, fetch fresh data
+      if (!ticket) {
+        const data = await secureApiRequest(`/tickets?created_by=${user.id}`)
+        const userTickets = data.tickets || data || []
+        ticket = userTickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
+        
+        // Update local tickets if we found new data
+        if (userTickets.length > 0) {
+          setTickets(userTickets)
+          setAllTickets(userTickets)
+        }
+      }
+      
       if (ticket) {
         setSelectedTicket(ticket)
       } else {
-        alert('Ticket not found')
+        alert('Ticket not found or not accessible')
       }
     } catch (err) {
       console.error('Failed to find ticket:', err)

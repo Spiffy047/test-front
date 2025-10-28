@@ -51,9 +51,12 @@ export default function SystemAdminDashboard({ user, onLogout }) {
       const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
       if (ticket) {
         setSelectedTicket(ticket)
+      } else {
+        alert('Ticket not found')
       }
     } catch (err) {
       console.error('Failed to find ticket:', err)
+      alert('Failed to load ticket details')
     }
   }
 

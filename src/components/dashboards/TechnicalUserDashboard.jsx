@@ -48,14 +48,30 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
 
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
-      const data = await secureApiRequest('/tickets')
-      const tickets = data.tickets || data || []
-      const ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
+      // First try to find in current tickets
+      let ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
+      
+      // If not found, fetch fresh data
+      if (!ticket) {
+        const data = await secureApiRequest('/tickets')
+        const allTickets = data.tickets || data || []
+        ticket = allTickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
+        
+        // Update local tickets if we found new data
+        if (allTickets.length > 0) {
+          setTickets(allTickets)
+          setAllTickets(allTickets)
+        }
+      }
+      
       if (ticket) {
         setSelectedTicket(ticket)
+      } else {
+        alert('Ticket not found')
       }
     } catch (err) {
       console.error('Failed to find ticket:', err)
+      alert('Failed to load ticket details')
     }
   }
 

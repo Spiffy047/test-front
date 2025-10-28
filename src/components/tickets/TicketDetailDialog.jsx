@@ -184,7 +184,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
           <div className="flex justify-between items-start">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">{ticket.title}</h2>
-              <p className="text-sm text-gray-600 mt-1">{ticket.id}</p>
+              <p className="text-sm text-gray-600 mt-1">{ticket.ticket_id || ticket.id}</p>
             </div>
             <div className="flex items-center gap-2">
               {ticket.sla_violated && (

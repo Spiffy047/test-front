@@ -19,12 +19,16 @@ function App() {
     setError('')
 
     try {
+      console.log('Sending login request:', formData) // Debug log
+      console.log('API URL:', `${API_URL}/auth/login`) // Debug log
+      
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
+      console.log('Response status:', response.status) // Debug log
       const responseData = await response.json()
       console.log('Login response:', responseData) // Debug log
       

@@ -14,10 +14,11 @@ export default function NotificationBell({ user, onNotificationClick }) {
     fetchAlerts()
     fetchUnreadCount()
     
-    // Poll for new alerts every 30 seconds
+    // Poll for new alerts every 5 seconds for real-time updates
     const interval = setInterval(() => {
       fetchUnreadCount()
-    }, 30000)
+      fetchAlerts()
+    }, 5000)
     
     return () => clearInterval(interval)
   }, [user.id])
@@ -42,8 +43,7 @@ export default function NotificationBell({ user, onNotificationClick }) {
       setUnreadCount(data.count || 0)
     } catch (err) {
       console.error('Failed to fetch unread count:', err)
-      // Set a test count for debugging
-      setUnreadCount(3)
+      setUnreadCount(0)
     }
   }
 
@@ -124,12 +124,12 @@ export default function NotificationBell({ user, onNotificationClick }) {
                   className={`p-4 border-b hover:bg-gray-50 cursor-pointer ${
                     !alert.is_read ? 'bg-blue-50' : ''
                   }`}
-                  onClick={() => {
-                    if (!alert.is_read) markAsRead(alert.id)
+                  onClick={async () => {
+                    if (!alert.is_read) await markAsRead(alert.id)
+                    setShowDropdown(false)
                     if (onNotificationClick && alert.ticket_id) {
                       onNotificationClick(alert.ticket_id, alert.alert_type)
                     }
-                    setShowDropdown(false)
                   }}
                 >
                   <div className="flex items-start gap-3">

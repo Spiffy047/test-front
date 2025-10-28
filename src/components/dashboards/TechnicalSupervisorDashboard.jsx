@@ -21,6 +21,7 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   const [unassignedTickets, setUnassignedTickets] = useState([])
   const [agentWorkload, setAgentWorkload] = useState([])
   const [agents, setAgents] = useState([])
+  const [assignmentSelections, setAssignmentSelections] = useState({})
   const [selectedTicket, setSelectedTicket] = useState(null)
   const [modalData, setModalData] = useState(null)
   const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0, has_next: false, has_prev: false })
@@ -280,36 +281,53 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
                 </h3>
                 <div className="space-y-3">
                   {unassignedTickets.map(ticket => (
-                    <div key={ticket.id} className="bg-white p-4 rounded-lg flex justify-between items-center">
-                      <div>
-                        <div className="font-medium">{ticket.id} - {ticket.title}</div>
-                        <div className="text-sm text-gray-600 mt-1">
-                          <span className={`px-2 py-1 rounded text-xs font-medium ${
-                            ticket.priority === 'Critical' ? 'bg-red-100 text-red-800' :
-                            ticket.priority === 'High' ? 'bg-orange-100 text-orange-800' :
-                            'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {ticket.priority}
-                          </span>
-                          <span className="ml-2">{ticket.category}</span>
+                    <div key={ticket.id} className="bg-white p-4 rounded-lg">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <div className="font-medium">{ticket.id} - {ticket.title}</div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            <span className={`px-2 py-1 rounded text-xs font-medium ${
+                              ticket.priority === 'Critical' ? 'bg-red-100 text-red-800' :
+                              ticket.priority === 'High' ? 'bg-orange-100 text-orange-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {ticket.priority}
+                            </span>
+                            <span className="ml-2">{ticket.category}</span>
+                          </div>
                         </div>
                       </div>
-                      <select
-                        onChange={(e) => e.target.value && handleAssignTicket(ticket.id, e.target.value)}
-                        className="px-3 py-2 border border-gray-300 rounded-md text-sm"
-                        defaultValue=""
-                      >
-                        <option value="">Assign to...</option>
-                        {agents.length > 0 ? agents.map(agent => (
-                          <option key={agent.id} value={agent.id}>
-                            {agent.name} ({agentWorkload.find(a => a.agent_id === agent.id)?.active_tickets || 0} active)
-                          </option>
-                        )) : agentWorkload.map(agent => (
-                          <option key={agent.agent_id} value={agent.agent_id}>
-                            {agent.name} ({agent.active_tickets} active)
-                          </option>
-                        ))}
-                      </select>
+                      <div className="flex gap-2 items-center">
+                        <select
+                          value={assignmentSelections[ticket.id] || ''}
+                          onChange={(e) => setAssignmentSelections(prev => ({...prev, [ticket.id]: e.target.value}))}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+                        >
+                          <option value="">Select agent...</option>
+                          {agents.length > 0 ? agents.map(agent => (
+                            <option key={agent.id} value={agent.id}>
+                              {agent.name} ({agentWorkload.find(a => a.agent_id === agent.id)?.active_tickets || 0} active)
+                            </option>
+                          )) : agentWorkload.map(agent => (
+                            <option key={agent.agent_id} value={agent.agent_id}>
+                              {agent.name} ({agent.active_tickets} active)
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => {
+                            const selectedAgent = assignmentSelections[ticket.id]
+                            if (selectedAgent) {
+                              handleAssignTicket(ticket.id, selectedAgent)
+                              setAssignmentSelections(prev => ({...prev, [ticket.id]: ''}))
+                            }
+                          }}
+                          disabled={!assignmentSelections[ticket.id]}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                        >
+                          Assign
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

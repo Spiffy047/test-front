@@ -61,11 +61,12 @@ function App() {
             <p className="text-gray-600 mt-2">Sign in to your account</p>
             
             <div className="mt-4 p-3 bg-blue-50 rounded-md text-left">
-              <p className="text-xs font-medium text-blue-800 mb-2">Demo Credentials:</p>
+              <p className="text-xs font-medium text-blue-800 mb-2">Demo Credentials (Password: password123):</p>
               <div className="text-xs text-blue-700 space-y-1">
-                <div><strong>Admin:</strong> admin@company.com / password123</div>
-                <div><strong>User:</strong> john.smith@company.com / password123</div>
-                <div><strong>Tech:</strong> sarah.johnson@company.com / password123</div>
+                <div><strong>System Admin:</strong> admin@company.com</div>
+                <div><strong>Supervisor:</strong> mike.chen@company.com</div>
+                <div><strong>Technical User:</strong> sarah.johnson@company.com</div>
+                <div><strong>Normal User:</strong> john.smith@company.com</div>
               </div>
             </div>
           </div>

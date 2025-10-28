@@ -73,22 +73,58 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
     setUploading(true)
     const formData = new FormData()
-    formData.append('file', file)
-    formData.append('ticket_id', ticket.id)
-    formData.append('uploaded_by', currentUser.id)
-
-    try {
-      await fetch(`${API_URL}/files/upload`, {
-        method: 'POST',
-        body: formData
-      })
-      fetchAttachments()
-    } catch (err) {
-      console.error('Failed to upload file:', err)
-    } finally {
-      setUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
+    
+    // Check if file is an image
+    if (file.type.startsWith('image/')) {
+      formData.append('image', file)
+      formData.append('ticket_id', ticket.id)
+      formData.append('user_id', currentUser.id)
+      
+      try {
+        const response = await fetch(`${API_URL}/upload/image`, {
+          method: 'POST',
+          body: formData
+        })
+        
+        const result = await response.json()
+        if (result.success) {
+          // Add image message to timeline
+          await fetch(`${API_URL}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ticket_id: ticket.id,
+              sender_id: currentUser.id,
+              sender_name: currentUser.name,
+              sender_role: currentUser.role,
+              message: `📷 Uploaded image: ${file.name}`,
+              image_url: result.url
+            })
+          })
+          fetchMessages()
+        }
+      } catch (err) {
+        console.error('Failed to upload image:', err)
+      }
+    } else {
+      // Regular file upload
+      formData.append('file', file)
+      formData.append('ticket_id', ticket.id)
+      formData.append('uploaded_by', currentUser.id)
+      
+      try {
+        await fetch(`${API_URL}/files/upload`, {
+          method: 'POST',
+          body: formData
+        })
+        fetchAttachments()
+      } catch (err) {
+        console.error('Failed to upload file:', err)
+      }
     }
+    
+    setUploading(false)
+    if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   const handleSendMessage = async (e) => {
@@ -307,6 +343,16 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                           </span>
                         </div>
                         <p className="text-gray-700">{item.message}</p>
+                        {item.image_url && (
+                          <div className="mt-3">
+                            <img 
+                              src={item.image_url} 
+                              alt="Attachment" 
+                              className="max-w-sm max-h-64 rounded-lg border cursor-pointer hover:opacity-90"
+                              onClick={() => window.open(item.image_url, '_blank')}
+                            />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </>
@@ -347,6 +393,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
               <input
                 ref={fileInputRef}
                 type="file"
+                accept="image/*,*/*"
                 onChange={handleFileUpload}
                 className="hidden"
               />
@@ -356,7 +403,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                 disabled={uploading}
                 className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm disabled:opacity-50"
               >
-                {uploading ? 'Uploading...' : 'Attach'}
+                {uploading ? 'Uploading...' : '📎 Attach'}
               </button>
               <button
                 type="submit"

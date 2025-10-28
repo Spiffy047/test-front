@@ -63,16 +63,6 @@ function App() {
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-gray-900">Hotfix</h1>
             <p className="text-gray-600 mt-2">Sign in to your account</p>
-            
-            <div className="mt-4 p-3 bg-blue-50 rounded-md text-left">
-              <p className="text-xs font-medium text-blue-800 mb-2">Demo Credentials (Password: password123):</p>
-              <div className="text-xs text-blue-700 space-y-1">
-                <div><strong>System Admin:</strong> admin@company.com</div>
-                <div><strong>Supervisor:</strong> mike.chen@company.com</div>
-                <div><strong>Technical User:</strong> sarah.johnson@company.com</div>
-                <div><strong>Normal User:</strong> john.smith@company.com</div>
-              </div>
-            </div>
           </div>
           
           <form onSubmit={handleSubmit(handleLogin)} className="space-y-4">
@@ -130,14 +120,6 @@ function App() {
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 font-medium"
             >
               {loading ? 'Signing in...' : 'Sign In'}
-            </button>
-            
-            <button
-              type="button"
-              onClick={() => handleLogin({email: 'admin@company.com', password: 'password123'})}
-              className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 font-medium text-sm"
-            >
-              Quick Test Login (Admin)
             </button>
           </form>
         </div>

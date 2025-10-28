@@ -29,9 +29,16 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
     try {
       const response = await fetch(`${API_URL}/tickets`)
       const data = await response.json()
-      setTickets(data)
+      if (data.tickets && Array.isArray(data.tickets)) {
+        setTickets(data.tickets)
+      } else if (Array.isArray(data)) {
+        setTickets(data)
+      } else {
+        setTickets([])
+      }
     } catch (err) {
       console.error('Failed to fetch tickets:', err)
+      setTickets([])
     }
   }
 

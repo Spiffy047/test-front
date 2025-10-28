@@ -20,18 +20,13 @@ function App() {
     setError('')
 
     try {
-      console.log('Sending login request:', formData) // Debug log
-      console.log('API URL:', `${API_URL}/auth/login`) // Debug log
-      
       const response = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       })
 
-      console.log('Response status:', response.status) // Debug log
       const responseData = await response.json()
-      console.log('Login response:', responseData) // Debug log
       
       if (response.ok && (responseData.success || responseData.access_token)) {
         setUser(responseData.user)
@@ -40,7 +35,6 @@ function App() {
         throw new Error(responseData.message || 'Invalid email or password')
       }
     } catch (err) {
-      console.error('Login error:', err) // Debug log
       if (err.name === 'TypeError' && err.message.includes('fetch')) {
         setError('Cannot connect to server. Please check your internet connection or try again later.')
       } else {

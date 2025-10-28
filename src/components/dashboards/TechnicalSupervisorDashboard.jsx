@@ -37,14 +37,18 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
     try {
       const response = await fetch(`${API_URL}/tickets?page=${page}&per_page=10`)
       const data = await response.json()
-      if (data.tickets) {
+      if (data.tickets && Array.isArray(data.tickets)) {
         setTickets(data.tickets)
         setPagination(data.pagination)
-      } else {
+      } else if (Array.isArray(data)) {
         setTickets(data)
+        setPagination({ page: 1, pages: 1, total: data.length, has_next: false, has_prev: false })
+      } else {
+        setTickets([])
       }
     } catch (err) {
       console.error('Failed to fetch tickets:', err)
+      setTickets([])
     }
   }
 

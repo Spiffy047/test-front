@@ -22,10 +22,20 @@ export default function SystemAdminDashboard({ user, onLogout }) {
     try {
       const response = await fetch(`${API_URL}/users`)
       const data = await response.json()
-      setUsers(data)
-      setAllUsers(data)
+      if (data.users && Array.isArray(data.users)) {
+        setUsers(data.users)
+        setAllUsers(data.users)
+      } else if (Array.isArray(data)) {
+        setUsers(data)
+        setAllUsers(data)
+      } else {
+        setUsers([])
+        setAllUsers([])
+      }
     } catch (err) {
       console.error('Failed to fetch users:', err)
+      setUsers([])
+      setAllUsers([])
     }
   }
 

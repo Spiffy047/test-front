@@ -8,7 +8,7 @@ export default function TicketAgingAnalysis() {
   const [agingData, setAgingData] = useState({})
 
   useEffect(() => {
-    fetch(`${API_URL}/tickets/analytics/aging`)
+    fetch(`${API_URL}/analytics/ticket-aging`)
       .then(res => res.json())
       .then(setAgingData)
       .catch(console.error)

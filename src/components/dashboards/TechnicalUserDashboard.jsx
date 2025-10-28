@@ -354,7 +354,7 @@ export default function TechnicalUserDashboard({ user, onLogout }) {
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900">{ticket.title}</h3>
-                      <p className="text-sm text-gray-600 mt-1">{ticket.id}</p>
+                      <p className="text-sm text-gray-600 mt-1">{ticket.ticket_id || ticket.id}</p>
                     </div>
                     <div className="flex gap-2">
                       {ticket.sla_violated && (

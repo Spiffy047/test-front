@@ -25,8 +25,8 @@ export default function NotificationBell({ user, onNotificationClick }) {
 
   const fetchAlerts = async () => {
     try {
-      const data = await secureApiRequest(`/notifications/${user.id}`)
-      setAlerts(Array.isArray(data) ? data.slice(0, 10) : data.notifications ? data.notifications.slice(0, 10) : [])
+      const data = await secureApiRequest(`/alerts/${user.id}`)
+      setAlerts(Array.isArray(data) ? data.slice(0, 10) : [])
     } catch (err) {
       if (err.message.includes('404')) {
         setAlerts([])
@@ -39,7 +39,7 @@ export default function NotificationBell({ user, onNotificationClick }) {
 
   const fetchUnreadCount = async () => {
     try {
-      const data = await secureApiRequest(`/notifications/${user.id}/unread-count`)
+      const data = await secureApiRequest(`/alerts/${user.id}/count`)
       setUnreadCount(data.count || 0)
     } catch (err) {
       console.error('Failed to fetch unread count:', err)
@@ -49,7 +49,7 @@ export default function NotificationBell({ user, onNotificationClick }) {
 
   const markAsRead = async (alertId) => {
     try {
-      await secureApiRequest(`/notifications/${alertId}/read`, { 
+      await secureApiRequest(`/alerts/${alertId}/read`, { 
         method: 'PUT'
       })
       fetchAlerts()
@@ -61,7 +61,7 @@ export default function NotificationBell({ user, onNotificationClick }) {
 
   const markAllAsRead = async () => {
     try {
-      await secureApiRequest(`/notifications/${user.id}/mark-all-read`, { 
+      await secureApiRequest(`/alerts/${user.id}/read-all`, { 
         method: 'PUT'
       })
       fetchAlerts()

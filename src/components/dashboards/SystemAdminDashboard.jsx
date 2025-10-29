@@ -169,7 +169,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
       setSystemStats({
         totalAgents,
         activeTickets,
-        avgResolution: avgResolution.toFixed(1)
+        avgResolution: (typeof avgResolution === 'number' && !isNaN(avgResolution) ? avgResolution : 0).toFixed(1)
       })
     } catch (err) {
       console.error('Failed to fetch system stats:', err)

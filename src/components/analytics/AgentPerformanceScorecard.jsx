@@ -102,7 +102,7 @@ export default function AgentPerformanceScorecard() {
               {/* Average handle time in hours */}
               <div>
                 <div className="text-gray-600">Avg Time</div>
-                <div className="font-semibold text-lg">{(agent?.avg_handle_time || 0).toFixed(1)}h</div>
+                <div className="font-semibold text-lg">{(typeof agent?.avg_handle_time === 'number' && !isNaN(agent.avg_handle_time) ? agent.avg_handle_time : 0).toFixed(1)}h</div>
               </div>
               {/* SLA violations count (highlighted in red) */}
               <div>

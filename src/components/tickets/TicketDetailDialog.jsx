@@ -76,53 +76,38 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
     setUploading(true)
     const formData = new FormData()
     
-    // Check if file is an image
-    if (file.type.startsWith('image/')) {
-      formData.append('image', file)
-      formData.append('ticket_id', ticket.id)
-      formData.append('user_id', currentUser.id)
+    // Use consistent field name for all uploads
+    formData.append('file', file)
+    formData.append('ticket_id', ticket.id)
+    formData.append('uploaded_by', currentUser.id)
+    
+    try {
+      const result = await secureApiRequest('/files/upload', {
+        method: 'POST',
+        body: formData
+      })
       
-      try {
-        const result = await secureApiRequest('/upload/image', {
+      // If it's an image, add to timeline with image display
+      if (file.type.startsWith('image/')) {
+        await secureApiRequest('/messages', {
           method: 'POST',
-          body: formData
-        })
-        if (result.success) {
-          // Add image message to timeline
-          await secureApiRequest('/messages', {
-            method: 'POST',
-            body: JSON.stringify({
-              ticket_id: ticket.id,
-              sender_id: currentUser.id,
-              sender_name: currentUser.name,
-              sender_role: currentUser.role,
-              message: `[Image] Uploaded image: ${file.name}`,
-              image_url: result.url
-            })
+          body: JSON.stringify({
+            ticket_id: ticket.id,
+            sender_id: currentUser.id,
+            sender_name: currentUser.name,
+            sender_role: currentUser.role,
+            message: `[Image] Uploaded image: ${file.name}`,
+            image_url: result.url || result.file_url
           })
-          fetchMessages()
-        }
-      } catch (err) {
-        console.error('Failed to upload image:', err)
-        alert(`Failed to upload image: ${err.message}`)
-      }
-    } else {
-      // Regular file upload
-      formData.append('file', file)
-      formData.append('ticket_id', ticket.id)
-      formData.append('uploaded_by', currentUser.id)
-      
-      try {
-        await secureApiRequest('/files/upload', {
-          method: 'POST',
-          body: formData
         })
-        fetchAttachments()
-        alert('File uploaded successfully!')
-      } catch (err) {
-        console.error('Failed to upload file:', err)
-        alert(`Failed to upload file: ${err.message}`)
+        fetchMessages()
       }
+      
+      fetchAttachments()
+      alert('File uploaded successfully!')
+    } catch (err) {
+      console.error('Failed to upload file:', err)
+      alert(`Failed to upload file: ${err.message}`)
     }
     
     setUploading(false)

@@ -131,9 +131,6 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
 
   const handleAssignTicket = async (ticketId, agentId) => {
     try {
-      // Immediately remove from unassigned list for better UX
-      setUnassignedTickets(prev => prev.filter(t => t.id !== ticketId))
-      
       await secureApiRequest(`/tickets/${ticketId}`, {
         method: 'PUT',
         body: JSON.stringify({
@@ -143,18 +140,22 @@ export default function TechnicalSupervisorDashboard({ user, onLogout }) {
         })
       })
       
+      // Remove from unassigned list after successful backend update
+      setUnassignedTickets(prev => prev.filter(t => t.id !== ticketId))
+      
       // Success feedback
       alert('Ticket assigned successfully!')
-      // Refresh all data to update dashboard
-      await Promise.all([
-        fetchTickets(),
-        fetchAnalytics()
-      ])
+      
+      // Refresh data after a short delay to ensure backend is updated
+      setTimeout(async () => {
+        await Promise.all([
+          fetchTickets(),
+          fetchAnalytics()
+        ])
+      }, 500)
     } catch (err) {
       console.error('Failed to assign ticket:', err)
       alert(`Failed to assign ticket: ${err.message}`)
-      // Revert the optimistic update on error
-      fetchAnalytics()
     }
   }
 

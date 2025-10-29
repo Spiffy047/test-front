@@ -4,6 +4,7 @@ import AgentPerformanceScorecard from '../analytics/AgentPerformanceScorecard'
 import UserForm from '../forms/UserForm'
 import NotificationBell from '../notifications/NotificationBell'
 import TicketDetailDialog from '../tickets/TicketDetailDialog'
+import DataModal from '../common/DataModal'
 import Footer from '../common/Footer'
 
 import { API_CONFIG } from '../../config/api'
@@ -21,11 +22,25 @@ export default function SystemAdminDashboard({ user, onLogout }) {
   const [selectedTicket, setSelectedTicket] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [systemStats, setSystemStats] = useState({ totalAgents: 0, activeTickets: 0, avgResolution: 0 })
+  const [modalData, setModalData] = useState(null)
+  const [slaData, setSlaData] = useState(null)
 
   useEffect(() => {
     fetchUsers()
     fetchSystemStats()
+    fetchSlaData()
   }, [])
+
+  const fetchSlaData = async () => {
+    try {
+      const data = await secureApiRequest('/tickets')
+      const tickets = data.tickets || data || []
+      setSlaData(tickets)
+    } catch (err) {
+      console.error('Failed to fetch SLA data:', err)
+      setSlaData([])
+    }
+  }
 
   // Debounced search effect
   useEffect(() => {
@@ -242,7 +257,9 @@ export default function SystemAdminDashboard({ user, onLogout }) {
               ))}
             </div>
 
-            <SLAAdherenceCard />
+            <div onClick={() => setModalData({ title: 'SLA Adherence Details', data: slaData || [] })}>
+              <SLAAdherenceCard />
+            </div>
             
 
           </div>
@@ -251,7 +268,9 @@ export default function SystemAdminDashboard({ user, onLogout }) {
         {activeTab === 'analytics' && (
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <SLAAdherenceCard />
+              <div onClick={() => setModalData({ title: 'SLA Adherence Details', data: slaData || [] })}>
+                <SLAAdherenceCard />
+              </div>
               <div className="bg-white rounded-lg shadow p-6">
                 <h3 className="text-lg font-semibold mb-4">System Overview</h3>
                 <div className="space-y-3">
@@ -360,6 +379,8 @@ export default function SystemAdminDashboard({ user, onLogout }) {
           onUpdate={() => {}}
         />
       )}
+
+      {modalData && <DataModal title={modalData.title} data={modalData.data} onClose={() => setModalData(null)} />}
       
       <Footer />
     </div>

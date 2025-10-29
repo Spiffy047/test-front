@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import { API_CONFIG } from '../../config/api'
 import { getPerformanceRatingStyles } from '../../utils/styleHelpers'
 import { secureApiRequest } from '../../utils/api'
@@ -57,10 +57,7 @@ export default function AgentPerformanceCard({ agentId, onCardClick, tickets }) 
 
   if (!performance) return null
 
-  const ratingStyles = useMemo(() => 
-    getPerformanceRatingStyles(performance?.performance_rating), 
-    [performance?.performance_rating]
-  )
+  const ratingStyles = getPerformanceRatingStyles(performance?.performance_rating || 'Unknown')
 
   return (
     <div className="bg-white rounded-lg shadow p-6">

@@ -242,26 +242,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <SLAAdherenceCard />
-              <div className="bg-white rounded-lg shadow p-6">
-                <h3 className="text-lg font-semibold mb-4">System Health</h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded">
-                    <span className="font-medium">API Status</span>
-                    <span className="text-green-600 font-semibold">Operational</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded">
-                    <span className="font-medium">Database</span>
-                    <span className="text-green-600 font-semibold">Connected</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 bg-green-50 rounded">
-                    <span className="font-medium">Authentication</span>
-                    <span className="text-green-600 font-semibold">Active</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <SLAAdherenceCard />
             
 
           </div>

@@ -1,5 +1,5 @@
 // Import React hooks for state management
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 // Import React Router components for client-side routing
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 // Import React Hook Form for form validation and handling
@@ -30,9 +30,33 @@ function App() {
   const [error, setError] = useState('')
   // State to track login loading status
   const [loading, setLoading] = useState(false)
+  // State to track initial auth check
+  const [authChecked, setAuthChecked] = useState(false)
   
   // React Hook Form setup for login form validation and handling
   const { register, handleSubmit, formState: { errors }, reset } = useForm()
+
+  // Check for existing authentication on app load
+  useEffect(() => {
+    const checkAuth = async () => {
+      const token = localStorage.getItem('token')
+      if (token) {
+        try {
+          const userData = await secureApiRequest('/auth/me')
+          if (userData && userData.id) {
+            setUser(userData)
+          } else {
+            localStorage.removeItem('token')
+          }
+        } catch (err) {
+          console.error('Auth check failed:', err)
+          localStorage.removeItem('token')
+        }
+      }
+      setAuthChecked(true)
+    }
+    checkAuth()
+  }, [])
 
   /**
    * Handle user login authentication
@@ -82,6 +106,17 @@ function App() {
     setUser(null) // Clear user data
     reset() // Reset login form
     localStorage.removeItem('token') // Remove JWT token
+  }
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   if (!user) {

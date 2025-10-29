@@ -5,8 +5,7 @@ import UserForm from '../forms/UserForm'
 import NotificationBell from '../notifications/NotificationBell'
 import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import Footer from '../common/Footer'
-import FixTicketNumbers from '../admin/FixTicketNumbers'
-import RecreateTickets from '../admin/RecreateTickets'
+
 import { API_CONFIG } from '../../config/api'
 import { getRoleStyles } from '../../utils/styleHelpers'
 import { secureApiRequest } from '../../utils/api'
@@ -264,10 +263,7 @@ export default function SystemAdminDashboard({ user, onLogout }) {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <FixTicketNumbers />
-              <RecreateTickets />
-            </div>
+
           </div>
         )}
 

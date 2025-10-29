@@ -38,13 +38,13 @@ export default function FixTicketNumbers() {
         <div className={`mt-4 p-4 rounded-md ${result.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
           {result.success ? (
             <div>
-              <p className="font-medium">✅ Success!</p>
+              <p className="font-medium"> Success!</p>
               <p>{result.message}</p>
               <p>Tickets updated: {result.tickets_updated}</p>
             </div>
           ) : (
             <div>
-              <p className="font-medium">❌ Error</p>
+              <p className="font-medium"> Error</p>
               <p>{result.error}</p>
             </div>
           )}

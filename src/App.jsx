@@ -40,17 +40,22 @@ function App() {
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('token')
-      if (token) {
+      const userData = localStorage.getItem('user')
+      
+      if (token && userData) {
         try {
-          const userData = await secureApiRequest('/auth/me')
-          if (userData && userData.id) {
-            setUser(userData)
+          // Since JWT is disabled, use stored user data
+          const parsedUser = JSON.parse(userData)
+          if (parsedUser && parsedUser.id) {
+            setUser(parsedUser)
           } else {
             localStorage.removeItem('token')
+            localStorage.removeItem('user')
           }
         } catch (err) {
           console.error('Auth check failed:', err)
           localStorage.removeItem('token')
+          localStorage.removeItem('user')
         }
       }
       setAuthChecked(true)
@@ -76,9 +81,11 @@ function App() {
       
       // Check if login was successful
       if (responseData?.success || responseData?.access_token) {
-        // Store user data in state and JWT token in localStorage
-        setUser(responseData?.user || null)
+        // Store user data in state and localStorage
+        const userData = responseData?.user || null
+        setUser(userData)
         localStorage.setItem('token', responseData?.access_token || responseData?.token || '')
+        localStorage.setItem('user', JSON.stringify(userData))
       } else {
         // Throw error with server message or default message
         throw new Error(responseData?.message || 'Invalid email or password')
@@ -106,6 +113,7 @@ function App() {
     setUser(null) // Clear user data
     reset() // Reset login form
     localStorage.removeItem('token') // Remove JWT token
+    localStorage.removeItem('user') // Remove user data
   }
 
   if (!authChecked) {

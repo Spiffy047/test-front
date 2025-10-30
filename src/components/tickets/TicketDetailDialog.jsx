@@ -51,7 +51,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
   const fetchAgents = async () => {
     try {
-      const data = await secureApiRequest('/agents')
+      const data = await secureApiRequest('/agents/assignable')
       setAgents(data || [])
     } catch (err) {
       console.error('Failed to fetch agents:', err)

@@ -1,19 +1,18 @@
 /**
  * Normal User Dashboard Component
  * 
- * Main dashboard interface for regular users (non-technical staff) who can:
- * - View their own tickets
- * - Create new support tickets with file attachments
- * - Search through their tickets
- * - View ticket statistics (open, closed, SLA violations)
- * - Receive real-time notifications
+ * Main dashboard for end users with intelligent ticket management:
+ * - Personal ticket view with agent name resolution
+ * - Multi-file upload support during ticket creation
+ * - Real-time search with 300ms debouncing
+ * - Auto-assignment notification display
+ * - Responsive design for all devices
  * 
- * Features:
- * - Debounced search (300ms delay) for performance
- * - File upload support with validation
- * - Real-time notification handling
- * - Responsive design with mobile support
- * - Secure API communication with CSRF protection
+ * Recent enhancements:
+ * - Fixed Content-Type headers for file uploads
+ * - Added agent name display instead of IDs
+ * - Enhanced file upload error handling
+ * - Improved multipart form data support
  */
 
 // React hooks for state management
@@ -36,16 +35,16 @@ const API_URL = API_CONFIG.BASE_URL
 
 export default function NormalUserDashboard({ user, onLogout }) {
   // === STATE MANAGEMENT ===
-  // Ticket data and filtering
-  const [tickets, setTickets] = useState([])              // Currently displayed tickets (filtered)
-  const [allTickets, setAllTickets] = useState([])        // All user tickets (unfiltered)
-  const [searchTerm, setSearchTerm] = useState('')        // Search input value
+  // Ticket data with real-time filtering
+  const [tickets, setTickets] = useState([])              // Filtered tickets for display
+  const [allTickets, setAllTickets] = useState([])        // Complete user ticket collection
+  const [searchTerm, setSearchTerm] = useState('')        // Debounced search input
   
-  // UI state management
-  const [showCreateModal, setShowCreateModal] = useState(false)    // Create ticket modal visibility
-  const [selectedTicket, setSelectedTicket] = useState(null)       // Ticket detail dialog
-  const [modalData, setModalData] = useState(null)                 // Data modal (statistics)
-  const [toastNotifications, setToastNotifications] = useState([]) // Toast notifications array
+  // UI state for modals and interactions
+  const [showCreateModal, setShowCreateModal] = useState(false)    // Ticket creation modal
+  const [selectedTicket, setSelectedTicket] = useState(null)       // Selected ticket for details
+  const [modalData, setModalData] = useState(null)                 // Statistics modal data
+  const [toastNotifications, setToastNotifications] = useState([]) // User feedback notifications
 
   // === EFFECTS ===
   // Load user tickets on component mount
@@ -79,10 +78,13 @@ export default function NormalUserDashboard({ user, onLogout }) {
   // === EVENT HANDLERS ===
   
   /**
-   * Handle notification bell clicks - opens ticket detail dialog
+   * Handle notification clicks with intelligent ticket lookup
    * 
-   * @param {string} ticketId - ID of the ticket to display
-   * @param {string} alertType - Type of alert (for future use)
+   * Searches local cache first, then fetches from server if needed.
+   * Updates local state with fresh data when available.
+   * 
+   * @param {string} ticketId - Ticket ID or ticket_id format
+   * @param {string} alertType - Alert type for future routing
    */
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
@@ -115,10 +117,11 @@ export default function NormalUserDashboard({ user, onLogout }) {
   }
 
   /**
-   * Fetch user's tickets from the API
+   * Fetch user tickets with agent name resolution
    * 
-   * Handles different response formats from the backend and updates
-   * both filtered and unfiltered ticket arrays.
+   * Retrieves tickets from backend with resolved agent names,
+   * handles multiple response formats, and updates local state.
+   * Includes error handling to prevent UI crashes.
    */
   const fetchTickets = async () => {
     try {
@@ -148,27 +151,27 @@ export default function NormalUserDashboard({ user, onLogout }) {
   }
 
   /**
-   * Handle ticket creation form submission
+   * Handle ticket creation with intelligent file upload
    * 
-   * Process includes:
-   * 1. Create ticket via API
-   * 2. Upload any attached files
-   * 3. Refresh ticket list
-   * 4. Show success/error feedback
+   * Enhanced process:
+   * 1. Detect file uploads and use multipart form data
+   * 2. Create ticket with auto-assignment
+   * 3. Upload additional files to timeline
+   * 4. Refresh UI with success feedback
    * 
-   * @param {Event} e - Form submission event
+   * @param {Event} e - Form submission event with file data
    */
   const handleCreateTicket = async (e) => {
     e.preventDefault()
     const formData = new FormData(e.target)
     
     try {
-      // Check if there are files to upload
+      // Detect file uploads and determine request format
       const fileInput = e.target.querySelector('input[type="file"]')
       const hasFiles = fileInput && fileInput.files.length > 0
       
       if (hasFiles) {
-        // Create ticket with attachment using multipart form data
+        // Use multipart form data for file upload support
         const ticketFormData = new FormData()
         ticketFormData.append('title', formData.get('title'))
         ticketFormData.append('description', formData.get('description'))
@@ -187,7 +190,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
           body: ticketFormData
         })
         
-        // Upload additional files if more than one
+        // Handle multiple file uploads to timeline
         if (fileInput.files.length > 1) {
           for (let i = 1; i < fileInput.files.length; i++) {
             const file = fileInput.files[i]
@@ -208,7 +211,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
           }
         }
       } else {
-        // Create ticket without attachment using JSON
+        // Standard JSON request for text-only tickets
         const newTicket = await secureApiRequest('/tickets', {
           method: 'POST',
           body: JSON.stringify({
@@ -221,7 +224,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
         })
       }
       
-      // Step 3: Clean up and refresh UI
+      // Clean up form and refresh ticket list
       setShowCreateModal(false)  // Close modal
       fetchTickets()              // Refresh ticket list
       e.target.reset()            // Clear form

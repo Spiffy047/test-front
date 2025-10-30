@@ -1,3 +1,6 @@
+// Ticket Detail Dialog Component
+// Comprehensive ticket view with timeline, messaging, and file upload capabilities
+
 import { useState, useEffect, useRef } from 'react'
 import { API_CONFIG } from '../../config/api'
 import { secureApiRequest } from '../../utils/api'
@@ -31,7 +34,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
   const fetchMessages = async () => {
     try {
-      // Use ticket_id (TKT-XXXX format) for timeline endpoint
+      // Fetch timeline using flexible ticket identification
       const ticketIdentifier = ticket.ticket_id || ticket.id
       console.log(`Fetching timeline for: ${ticketIdentifier}`)
       const data = await secureApiRequest(`/messages/ticket/${ticketIdentifier}/timeline`)
@@ -80,10 +83,10 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
     setUploading(true)
     const formData = new FormData()
     
-    // Use consistent field names and ticket_id format
-    formData.append('file', file)  // Use 'file' field name for /files/upload endpoint
-    formData.append('ticket_id', ticket.ticket_id || ticket.id)
-    formData.append('user_id', currentUser.id)
+    // Configure form data for timeline file upload
+    formData.append('file', file)  // Standard field name for /files/upload
+    formData.append('ticket_id', ticket.ticket_id || ticket.id)  // Support both ID formats
+    formData.append('user_id', currentUser.id)  // User identification
     
     console.log('Uploading file:', file.name, 'to ticket:', ticket.ticket_id || ticket.id)
     
@@ -113,7 +116,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
     if (!newMessage.trim()) return
 
     try {
-      // Use ticket_id (TKT-XXXX format) for message creation
+      // Support flexible ticket identification for messaging
       const ticketIdentifier = ticket.ticket_id || ticket.id
       console.log(`Sending message to ticket: ${ticketIdentifier}`)
       
@@ -160,6 +163,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
   const timeline = [...messages, ...activities]
     .sort((a, b) => new Date(a.timestamp || a.created_at) - new Date(b.timestamp || b.created_at))
 
+  // Determine edit permissions based on user role and ticket ownership
   const canEdit = currentUser.role !== 'Normal User' || (currentUser.role === 'Normal User' && ticket.created_by === currentUser.id && ticket.status !== 'Closed')
 
   return (

@@ -1,19 +1,18 @@
 /**
  * Secure API utility functions for IT ServiceDesk frontend
  * 
- * This module provides secure API communication with the backend, including:
- * - CSRF (Cross-Site Request Forgery) protection for state-changing requests
- * - SSRF (Server-Side Request Forgery) prevention through URL validation
- * - Comprehensive error handling with user-friendly messages
- * - Domain allowlisting to prevent malicious API calls
- * - Private IP range blocking for security
+ * Enhanced API communication with intelligent Content-Type handling:
+ * - Automatic Content-Type detection for JSON vs FormData
+ * - CSRF protection for state-changing requests
+ * - SSRF prevention through URL validation
+ * - Comprehensive error handling and parsing
+ * - Domain allowlisting for security
  * 
- * Security Features:
- * - URL validation against allowed domains
- * - CSRF token inclusion for POST/PUT/DELETE requests
- * - Private IP range blocking (127.x.x.x, 10.x.x.x, 192.168.x.x, etc.)
- * - Proper error parsing and handling
- * - Same-origin credential policy
+ * Recent enhancements:
+ * - Fixed Content-Type headers for file uploads
+ * - Enhanced FormData detection and handling
+ * - Improved error parsing for better UX
+ * - Secure multipart form data support
  */
 
 import { API_CONFIG } from '../config/api'
@@ -142,20 +141,20 @@ export const secureApiRequest = async (endpoint, options = {}) => {
   // Get JWT token for authentication
   const token = localStorage.getItem('token')
   
-  // Build secure request configuration
+  // Build secure request configuration with intelligent Content-Type handling
   const config = {
     ...options,
     headers: {
-      // Only add Content-Type for non-FormData requests
+      // Automatically detect FormData and avoid setting Content-Type (browser handles boundary)
       ...(!(options.body instanceof FormData) && { 'Content-Type': 'application/json' }),
-      // Add JWT token for authentication
+      // JWT authentication for secure API access
       ...(token && { 'Authorization': `Bearer ${token}` }),
-      // Add CSRF token for state-changing requests
+      // CSRF protection for state-changing operations
       ...(csrfToken && { 'X-CSRF-Token': csrfToken }),
-      // Preserve any additional headers from caller
+      // Preserve caller-specified headers
       ...options.headers
     },
-    // Use same-origin credentials policy for security
+    // Secure credential policy
     credentials: 'same-origin'
   }
 

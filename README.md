@@ -130,8 +130,8 @@ The frontend is deployed on Vercel with automatic deployments from the main bran
 
 ## Recent Updates
 
-- ✅ Fixed Content-Type headers for file uploads
-- ✅ Enhanced file upload with proper field names
-- ✅ Added agent name display instead of IDs
-- ✅ Improved error handling and user feedback
-- ✅ Fixed timeline file upload integration
+- [FIXED] Fixed Content-Type headers for file uploads
+- [FIXED] Enhanced file upload with proper field names
+- [FIXED] Added agent name display instead of IDs
+- [FIXED] Improved error handling and user feedback
+- [FIXED] Fixed timeline file upload integration

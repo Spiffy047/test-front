@@ -31,7 +31,11 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
   const fetchMessages = async () => {
     try {
-      const data = await secureApiRequest(`/messages/ticket/${ticket.id}/timeline`)
+      // Use ticket_id (TKT-XXXX format) for timeline endpoint
+      const ticketIdentifier = ticket.ticket_id || ticket.id
+      console.log(`Fetching timeline for: ${ticketIdentifier}`)
+      const data = await secureApiRequest(`/messages/ticket/${ticketIdentifier}/timeline`)
+      console.log('Timeline data received:', data)
       setMessages(Array.isArray(data) ? data : data.messages || [])
     } catch (err) {
       console.error('Failed to fetch messages:', err)
@@ -76,10 +80,10 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
     setUploading(true)
     const formData = new FormData()
     
-    // Use consistent field name for all uploads
-    formData.append('file', file)
-    formData.append('ticket_id', ticket.id)
-    formData.append('uploaded_by', currentUser.id)
+    // Use consistent field names and ticket_id format
+    formData.append('image', file)  // Use 'image' field name for consistency
+    formData.append('ticket_id', ticket.ticket_id || ticket.id)
+    formData.append('user_id', currentUser.id)  // Use 'user_id' as expected by backend
     
     try {
       const result = await secureApiRequest('/files/upload', {
@@ -119,16 +123,22 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
     if (!newMessage.trim()) return
 
     try {
-      await secureApiRequest('/messages', {
+      // Use ticket_id (TKT-XXXX format) for message creation
+      const ticketIdentifier = ticket.ticket_id || ticket.id
+      console.log(`Sending message to ticket: ${ticketIdentifier}`)
+      
+      const response = await secureApiRequest('/messages', {
         method: 'POST',
         body: JSON.stringify({
-          ticket_id: ticket.id,
+          ticket_id: ticketIdentifier,
           sender_id: currentUser.id,
           sender_name: currentUser.name,
           sender_role: currentUser.role,
           message: newMessage
         })
       })
+      
+      console.log('Message sent response:', response)
       setNewMessage('')
       await fetchMessages()
     } catch (err) {

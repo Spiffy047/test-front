@@ -40,14 +40,19 @@ function App() {
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('token')
-      const userData = localStorage.getItem('user')
       
-      if (token && userData) {
+      if (token) {
         try {
-          // Since JWT is disabled, use stored user data
-          const parsedUser = JSON.parse(userData)
-          if (parsedUser && parsedUser.id) {
-            setUser(parsedUser)
+          // Validate token with backend
+          const userData = await secureApiRequest('/auth/me', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          
+          if (userData && userData.id) {
+            setUser(userData)
+            localStorage.setItem('user', JSON.stringify(userData))
           } else {
             localStorage.removeItem('token')
             localStorage.removeItem('user')

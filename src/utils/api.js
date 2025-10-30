@@ -139,11 +139,16 @@ export const secureApiRequest = async (endpoint, options = {}) => {
   const needsCsrf = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method?.toUpperCase())
   const csrfToken = needsCsrf ? document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') : null
   
+  // Get JWT token for authentication
+  const token = localStorage.getItem('token')
+  
   // Build secure request configuration
   const config = {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      // Add JWT token for authentication
+      ...(token && { 'Authorization': `Bearer ${token}` }),
       // Add CSRF token for state-changing requests
       ...(csrfToken && { 'X-CSRF-Token': csrfToken }),
       // Preserve any additional headers from caller

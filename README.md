@@ -1,14 +1,15 @@
 # IT ServiceDesk Frontend
 
-React + TypeScript frontend for the IT ServiceDesk platform with role-based dashboards, real-time chat, and comprehensive analytics.
+React frontend for the IT ServiceDesk platform with role-based dashboards, real-time chat, and comprehensive analytics.
 
 ## Live Demo
 
 **URL**: https://hotfix-ochre.vercel.app
+**Backend API**: https://hotfix.onrender.com/api
 
 ## Technology Stack
 
-- **React 18** with TypeScript
+- **React 18** with JavaScript
 - **Vite** - Fast build tool and dev server
 - **Tailwind CSS** - Utility-first CSS framework
 - **React Router v6** - Client-side routing
@@ -64,32 +65,16 @@ npm run dev
 VITE_API_URL=http://localhost:5001/api
 ```
 
-## Dependencies
+## Key Dependencies
 
-```json
-{
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.8.0",
-    "react-hook-form": "^7.43.0",
-    "@radix-ui/react-dialog": "^1.0.0",
-    "@radix-ui/react-select": "^1.2.0",
-    "recharts": "^2.5.0",
-    "lucide-react": "^0.263.0"
-  },
-  "devDependencies": {
-    "@types/react": "^18.0.28",
-    "@types/react-dom": "^18.0.11",
-    "@vitejs/plugin-react": "^3.1.0",
-    "vite": "^4.2.0",
-    "tailwindcss": "^3.2.7",
-    "postcss": "^8.4.21",
-    "autoprefixer": "^10.4.14",
-    "eslint": "^8.38.0"
-  }
-}
-```
+- **react** & **react-dom** - Core React framework
+- **react-router-dom** - Client-side routing
+- **react-hook-form** - Form validation and handling
+- **@radix-ui/react-dialog** & **@radix-ui/react-select** - Accessible UI components
+- **recharts** - Data visualization and charts
+- **lucide-react** - Icon library
+- **tailwindcss** - Utility-first CSS framework
+- **vite** - Build tool and development server
 
 ## Component Structure
 
@@ -212,8 +197,8 @@ npm run build
 
 1. **Component Development**
    - Create reusable components in appropriate directories
-   - Use TypeScript for type safety
-   - Follow React best practices
+   - Follow React best practices and hooks patterns
+   - Maintain consistent code style
 
 2. **Styling**
    - Use Tailwind CSS utilities

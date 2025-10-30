@@ -248,7 +248,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                   ))}
                 </select>
               ) : (
-                <p className="text-gray-900">{ticket.assigned_to ? `Agent ${ticket.assigned_to}` : 'Unassigned'}</p>
+                <p className="text-gray-900">{ticket.assigned_to ? (ticket.assigned_agent_name || `Agent ${ticket.assigned_to}`) : 'Unassigned'}</p>
               )}
             </div>
             <div>

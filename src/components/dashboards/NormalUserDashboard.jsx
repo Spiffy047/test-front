@@ -331,7 +331,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
                   <div className="flex gap-4 text-sm text-gray-500">
                     <span>Category: {ticket.category}</span>
                     <span>Created: {new Date(ticket.created_at).toLocaleDateString()}</span>
-                    {ticket.assigned_to && <span>Assigned to: Agent {ticket.assigned_to}</span>}
+                    {ticket.assigned_to && <span>Assigned to: {ticket.assigned_agent_name || `Agent ${ticket.assigned_to}`}</span>}
                   </div>
                   <button
                     onClick={() => setSelectedTicket(ticket)}

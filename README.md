@@ -1,15 +1,46 @@
 # IT ServiceDesk Frontend
 
-React frontend for the IT ServiceDesk platform with role-based dashboards, real-time chat, and comprehensive analytics.
+React frontend application for the IT ServiceDesk platform with role-based dashboards, real-time messaging, and intelligent file handling.
 
-## Live Demo
+## Features
 
-**URL**: https://hotfix-ochre.vercel.app
-**Backend API**: https://hotfix.onrender.com/api
+### Role-Based Dashboards
+- **Normal User Dashboard** - Personal ticket management with file attachments
+- **Technical User Dashboard** - Agent portal with SLA monitoring and workload tracking
+- **Technical Supervisor Dashboard** - Team analytics and performance oversight
+- **System Admin Dashboard** - Complete system management and user administration
+
+### Advanced File Upload System
+- **Ticket creation uploads** - Attach files during ticket creation
+- **Timeline uploads** - Add files to existing ticket conversations
+- **Multiple format support** - Images, documents, PDFs, and more
+- **Drag & drop interface** - User-friendly file selection
+- **Real-time preview** - Immediate file display in timeline
+
+### Interactive Components
+- **Real-time ticket timeline** - Live conversation view with file attachments
+- **Agent name resolution** - Shows actual agent names instead of IDs
+- **Responsive design** - Works on desktop, tablet, and mobile
+- **Toast notifications** - User-friendly feedback system
+- **Search and filtering** - Find tickets quickly
+
+## Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Set environment variables
+echo "VITE_API_URL=http://localhost:5001/api" > .env.local
+
+# Run development server
+npm run dev
+# Opens at http://localhost:5173
+```
 
 ## Technology Stack
 
-- **React 18** with JavaScript
+- **React 18** - Modern React with hooks
 - **Vite** - Fast build tool and dev server
 - **Tailwind CSS** - Utility-first CSS framework
 - **React Router v6** - Client-side routing
@@ -18,65 +49,7 @@ React frontend for the IT ServiceDesk platform with role-based dashboards, real-
 - **Radix UI** - Accessible component primitives
 - **Lucide React** - Icon library
 
-## Key Features
-
-### Role-Based Dashboards
-- **Normal User**: Personal ticket management
-- **Technical User**: Agent portal with SLA monitoring
-- **Technical Supervisor**: Team analytics and oversight
-- **System Admin**: Complete system management
-
-### Interactive Components
-- Real-time ticket chat with timeline view
-- Image upload and display with Cloudinary
-- Responsive data tables with pagination
-- Interactive charts and analytics
-- Toast notifications and alerts
-
-### Analytics & Reporting
-- SLA adherence tracking
-- Ticket aging analysis
-- Agent performance scorecards
-- Real-time dashboard updates
-
-## Local Development
-
-```bash
-# Clone and setup
-git clone <repository-url>
-cd it-servicedesk-frontend
-
-# Install dependencies
-npm install
-
-# Set environment variables
-cp .env.example .env.local
-# Edit .env.local with your API URL
-
-# Start development server
-npm run dev
-# Opens at http://localhost:5173
-```
-
-## Environment Variables
-
-```bash
-# .env.local
-VITE_API_URL=http://localhost:5001/api
-```
-
-## Key Dependencies
-
-- **react** & **react-dom** - Core React framework
-- **react-router-dom** - Client-side routing
-- **react-hook-form** - Form validation and handling
-- **@radix-ui/react-dialog** & **@radix-ui/react-select** - Accessible UI components
-- **recharts** - Data visualization and charts
-- **lucide-react** - Icon library
-- **tailwindcss** - Utility-first CSS framework
-- **vite** - Build tool and development server
-
-## Component Structure
+## Project Structure
 
 ```
 src/
@@ -88,143 +61,77 @@ src/
 │   ├── forms/             # Form components
 │   ├── notifications/     # Notification system
 │   └── tickets/           # Ticket management components
+├── utils/
+│   ├── api.js            # Secure API utilities
+│   └── styleHelpers.js   # CSS utility functions
+├── config/
+│   └── api.js            # API configuration
 ├── App.jsx               # Main application component
-├── main.jsx             # Application entry point
-└── index.css           # Global styles
+└── main.jsx             # Application entry point
 ```
 
-### Key Components
+## Key Components
 
-#### Dashboards
-- `NormalUserDashboard.jsx` - Personal ticket view
+### Dashboards
+- `NormalUserDashboard.jsx` - Personal ticket view with file upload
 - `TechnicalUserDashboard.jsx` - Agent portal with SLA alerts
 - `TechnicalSupervisorDashboard.jsx` - Team management and analytics
 - `SystemAdminDashboard.jsx` - System administration
 
-#### Shared Components
-- `TicketDetailDialog.jsx` - Comprehensive ticket view with chat
-- `DataModal.jsx` - Reusable data display modal
-- `Pagination.jsx` - List navigation component
-- `NotificationBell.jsx` - Real-time notifications
+### Ticket Management
+- `TicketDetailDialog.jsx` - Comprehensive ticket view with timeline
+- `TicketCreationForm.jsx` - New ticket form with file attachments
+- `Timeline.jsx` - Message and file timeline display
 
-#### Analytics
-- `SLAAdherenceCard.jsx` - SLA tracking display
-- `TicketAgingAnalysis.jsx` - Aging analysis charts
-- `AgentPerformanceScorecard.jsx` - Performance metrics
+### File Handling
+- `FileUpload.jsx` - File upload component
+- `FilePreview.jsx` - File display and preview
+- `AttachmentList.jsx` - File attachment management
 
-## User Roles & Features
+## API Integration
 
-### Normal User
-- View and create personal tickets
-- Real-time chat with support agents
-- Track ticket status and resolution
-- Upload images and files
+### Secure API Utilities
+- **SSRF prevention** - URL validation and domain allowlisting
+- **CSRF protection** - Token-based security for state changes
+- **Content-Type handling** - Proper headers for JSON and FormData
+- **Error handling** - Comprehensive error parsing and display
 
-### Technical User
-- Manage assigned tickets
-- SLA violation alerts with "Take Action" functionality
-- Update ticket status (Pending, Resolved)
-- Access to all tickets for assignment
+### File Upload Integration
+- **Multipart form data** - Proper handling for file uploads
+- **Progress tracking** - Upload progress indicators
+- **Error recovery** - Retry mechanisms for failed uploads
 
-### Technical Supervisor
-- Team analytics and performance metrics
-- Ticket aging analysis
-- Agent workload management
-- SLA adherence monitoring
+## Environment Variables
 
-### System Admin
-- Complete user management (CRUD)
-- System health monitoring
-- Advanced analytics dashboard
-- User role assignment
-
-## Authentication & Security
-
-- JWT token-based authentication
-- Role-based access control (RBAC)
-- Protected routes based on user roles
-- Secure API communication with CORS
-- Form validation with React Hook Form
-
-## Responsive Design
-
-- Mobile-first approach with Tailwind CSS
-- Responsive breakpoints for all screen sizes
-- Touch-friendly interactions
-- Accessible navigation and components
+```bash
+VITE_API_URL=http://localhost:5001/api  # Backend API URL
+```
 
 ## Build & Deployment
 
-### Development
 ```bash
+# Development
 npm run dev          # Start dev server
 npm run build        # Build for production
 npm run preview      # Preview production build
 npm run lint         # Run ESLint
-```
 
-### Production (Vercel)
-```bash
-# Build and deploy
-npm run build
+# Production (Vercel)
+npm run build        # Build application
 # Deploy dist/ folder to Vercel
-
-# Or connect GitHub repository for auto-deployment
 ```
 
-## Styling & Theming
+## Deployment
 
-### Tailwind CSS Configuration
-- Custom color palette for branding
-- Responsive utilities for all components
-- Dark mode ready (can be implemented)
-- Consistent spacing and typography
+The frontend is deployed on Vercel with automatic deployments from the main branch.
 
-### Component Styling
-- Utility-first approach with Tailwind
-- Consistent design system
-- Accessible color contrasts
-- Professional UI/UX patterns
+- **Production URL**: https://hotfix-ochre.vercel.app
+- **Preview deployments** - Automatic for pull requests
 
-## State Management
+## Recent Updates
 
-- React hooks for local state
-- Context API for global state (if needed)
-- Form state with React Hook Form
-- API state management with fetch
-
-## Development Workflow
-
-1. **Component Development**
-   - Create reusable components in appropriate directories
-   - Follow React best practices and hooks patterns
-   - Maintain consistent code style
-
-2. **Styling**
-   - Use Tailwind CSS utilities
-   - Maintain consistent design patterns
-   - Ensure responsive behavior
-
-3. **Integration**
-   - Connect to backend API endpoints
-   - Handle loading and error states
-   - Implement proper data validation
-
-## Performance Optimizations
-
-- Code splitting with React.lazy (ready for implementation)
-- Image optimization via Cloudinary
-- Efficient re-renders with React.memo
-- Optimized bundle size with Vite
-
-## Future Enhancements
-
-- Progressive Web App (PWA) features
-- Real-time updates with WebSockets
-- Advanced search and filtering
-- Offline capabilities
-- Push notifications
-
-## License
-
-MIT License - see LICENSE file for details.
+- ✅ Fixed Content-Type headers for file uploads
+- ✅ Enhanced file upload with proper field names
+- ✅ Added agent name display instead of IDs
+- ✅ Improved error handling and user feedback
+- ✅ Fixed timeline file upload integration

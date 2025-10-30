@@ -146,7 +146,8 @@ export const secureApiRequest = async (endpoint, options = {}) => {
   const config = {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      // Only add Content-Type for non-FormData requests
+      ...(!(options.body instanceof FormData) && { 'Content-Type': 'application/json' }),
       // Add JWT token for authentication
       ...(token && { 'Authorization': `Bearer ${token}` }),
       // Add CSRF token for state-changing requests

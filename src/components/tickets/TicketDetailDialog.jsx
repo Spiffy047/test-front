@@ -81,9 +81,11 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
     const formData = new FormData()
     
     // Use consistent field names and ticket_id format
-    formData.append('image', file)  // Use 'image' field name for consistency
+    formData.append('file', file)  // Use 'file' field name for /files/upload endpoint
     formData.append('ticket_id', ticket.ticket_id || ticket.id)
-    formData.append('user_id', currentUser.id)  // Use 'user_id' as expected by backend
+    formData.append('user_id', currentUser.id)
+    
+    console.log('Uploading file:', file.name, 'to ticket:', ticket.ticket_id || ticket.id)
     
     try {
       const result = await secureApiRequest('/files/upload', {
@@ -91,22 +93,10 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
         body: formData
       })
       
-      // If it's an image, add to timeline with image display
-      if (file.type.startsWith('image/')) {
-        await secureApiRequest('/messages', {
-          method: 'POST',
-          body: JSON.stringify({
-            ticket_id: ticket.id,
-            sender_id: currentUser.id,
-            sender_name: currentUser.name,
-            sender_role: currentUser.role,
-            message: `[Image] Uploaded image: ${file.name}`,
-            image_url: result.url || result.file_url
-          })
-        })
-        fetchMessages()
-      }
+      console.log('Upload result:', result)
       
+      // Refresh messages to show the uploaded file in timeline
+      await fetchMessages()
       fetchAttachments()
       alert('File uploaded successfully!')
     } catch (err) {

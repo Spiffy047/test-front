@@ -179,7 +179,9 @@ export default function NormalUserDashboard({ user, onLogout }) {
         // Add the first file as attachment (backend expects single file)
         ticketFormData.append('attachment', fileInput.files[0])
         
-        console.log('Creating ticket with attachment...')
+        console.log('Creating ticket with attachment:', fileInput.files[0].name)
+        console.log('Form data fields:', Array.from(ticketFormData.keys()))
+        
         const newTicket = await secureApiRequest('/tickets', {
           method: 'POST',
           body: ticketFormData

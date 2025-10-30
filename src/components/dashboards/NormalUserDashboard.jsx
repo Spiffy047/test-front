@@ -163,40 +163,60 @@ export default function NormalUserDashboard({ user, onLogout }) {
     const formData = new FormData(e.target)
     
     try {
-      // Step 1: Create the ticket first
-      const newTicket = await secureApiRequest('/tickets', {
-        method: 'POST',
-        body: JSON.stringify({
-          title: formData.get('title'),
-          description: formData.get('description'),
-          priority: formData.get('priority'),
-          category: formData.get('category'),
-          created_by: user.id
-        })
-      })
-        
-      // Step 2: Handle file uploads if any files were selected
+      // Check if there are files to upload
       const fileInput = e.target.querySelector('input[type="file"]')
-      if (fileInput && fileInput.files.length > 0) {
-        // Upload each file individually
-        for (let file of fileInput.files) {
-          const uploadFormData = new FormData()
-          uploadFormData.append('file', file)
-          uploadFormData.append('ticket_id', newTicket.id)  // Link to created ticket
-          uploadFormData.append('uploaded_by', user.id)
-          
-          try {
-            await secureApiRequest('/files/upload', {
-              method: 'POST',
-              body: uploadFormData,
-              headers: {} // Let browser set content-type for FormData
-            })
-          } catch (uploadErr) {
-            console.error('Failed to upload file:', uploadErr)
-            // Show error but don't fail entire ticket creation
-            alert(`Failed to upload ${file.name}: ${uploadErr.message}`)
+      const hasFiles = fileInput && fileInput.files.length > 0
+      
+      if (hasFiles) {
+        // Create ticket with attachment using multipart form data
+        const ticketFormData = new FormData()
+        ticketFormData.append('title', formData.get('title'))
+        ticketFormData.append('description', formData.get('description'))
+        ticketFormData.append('priority', formData.get('priority'))
+        ticketFormData.append('category', formData.get('category'))
+        ticketFormData.append('created_by', user.id)
+        
+        // Add the first file as attachment (backend expects single file)
+        ticketFormData.append('attachment', fileInput.files[0])
+        
+        console.log('Creating ticket with attachment...')
+        const newTicket = await secureApiRequest('/tickets', {
+          method: 'POST',
+          body: ticketFormData
+        })
+        
+        // Upload additional files if more than one
+        if (fileInput.files.length > 1) {
+          for (let i = 1; i < fileInput.files.length; i++) {
+            const file = fileInput.files[i]
+            const uploadFormData = new FormData()
+            uploadFormData.append('image', file)  // Use 'image' field name
+            uploadFormData.append('ticket_id', newTicket.ticket_id || newTicket.id)
+            uploadFormData.append('user_id', user.id)
+            
+            try {
+              await secureApiRequest('/upload/image', {
+                method: 'POST',
+                body: uploadFormData
+              })
+            } catch (uploadErr) {
+              console.error('Failed to upload additional file:', uploadErr)
+              alert(`Failed to upload ${file.name}: ${uploadErr.message}`)
+            }
           }
         }
+      } else {
+        // Create ticket without attachment using JSON
+        const newTicket = await secureApiRequest('/tickets', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: formData.get('title'),
+            description: formData.get('description'),
+            priority: formData.get('priority'),
+            category: formData.get('category'),
+            created_by: user.id
+          })
+        })
       }
       
       // Step 3: Clean up and refresh UI

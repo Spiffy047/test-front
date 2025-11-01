@@ -10,10 +10,8 @@ import DataModal from '../common/DataModal'
 import NotificationBell from '../notifications/NotificationBell'
 import Footer from '../common/Footer'
 import Pagination from '../common/Pagination'
-import { API_CONFIG } from '../../config/api'
 import { secureApiRequest } from '../../utils/api'
 
-const API_URL = API_CONFIG.BASE_URL
 
 export default function TechnicalSupervisorDashboard({ user, onLogout }) {
   const [tickets, setTickets] = useState([])

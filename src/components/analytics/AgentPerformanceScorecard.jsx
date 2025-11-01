@@ -1,11 +1,9 @@
 // Import React hooks for state management and lifecycle
 import { useEffect, useState } from 'react'
-import { API_CONFIG } from '../../config/api'
 import { getPerformanceRatingStyles } from '../../utils/styleHelpers'
 import { secureApiRequest } from '../../utils/api'
 
 // API base URL for backend communication
-const API_URL = API_CONFIG.BASE_URL
 
 /**
  * AgentPerformanceScorecard Component

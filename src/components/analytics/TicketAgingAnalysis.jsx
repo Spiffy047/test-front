@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
-import { API_CONFIG } from '../../config/api'
 import { getPriorityStyles } from '../../utils/styleHelpers'
 
-const API_URL = API_CONFIG.BASE_URL
 
 export default function TicketAgingAnalysis() {
   const [agingData, setAgingData] = useState({})

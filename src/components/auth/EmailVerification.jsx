@@ -1,9 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
-import { API_CONFIG } from '../../config/api'
 import { secureApiRequest } from '../../utils/api'
-
-const API_URL = API_CONFIG.BASE_URL
 
 export default function EmailVerification() {
   const [searchParams] = useSearchParams()

@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
-import { API_CONFIG } from '../../config/api'
 import { getPerformanceRatingStyles } from '../../utils/styleHelpers'
 import { secureApiRequest } from '../../utils/api'
 
-const API_URL = API_CONFIG.BASE_URL
 
 export default function AgentPerformanceCard({ agentId, onCardClick, tickets }) {
   const [performance, setPerformance] = useState(null)

@@ -7,11 +7,8 @@ import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import DataModal from '../common/DataModal'
 import Footer from '../common/Footer'
 
-import { API_CONFIG } from '../../config/api'
 import { getRoleStyles } from '../../utils/styleHelpers'
 import { secureApiRequest } from '../../utils/api'
-
-const API_URL = API_CONFIG.BASE_URL
 
 export default function SystemAdminDashboard({ user, onLogout }) {
   const [users, setUsers] = useState([])

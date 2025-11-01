@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { API_CONFIG } from '../../config/api'
 import { secureApiRequest } from '../../utils/api'
 
-const API_BASE_URL = API_CONFIG.BASE_URL
 
 export default function RealtimeSLADashboard({ onCardClick }) {
   const [slaData, setSlaData] = useState(null)

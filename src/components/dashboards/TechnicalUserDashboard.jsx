@@ -6,11 +6,9 @@ import AgentPerformanceCard from '../analytics/AgentPerformanceCard'
 import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
 import Footer from '../common/Footer'
-import { API_CONFIG } from '../../config/api'
 import { getPriorityStyles, getStatusStyles } from '../../utils/styleHelpers'
 import { secureApiRequest } from '../../utils/api'
 
-const API_URL = API_CONFIG.BASE_URL
 
 export default function TechnicalUserDashboard({ user, onLogout }) {
   // State management

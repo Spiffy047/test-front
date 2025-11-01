@@ -3,32 +3,7 @@
  * Centralized configuration for API endpoints
  */
 
-// Get API URL from environment variables with production fallback
-const getApiUrl = () => {
-  try {
-    // Check Vite environment variables first
-    const viteApiUrl = import.meta?.env?.VITE_API_URL
-    if (viteApiUrl && typeof viteApiUrl === 'string') {
-      console.log('Using VITE_API_URL:', viteApiUrl)
-      return viteApiUrl
-    }
-    
-    // Check if we're in development mode
-    const isDev = import.meta?.env?.DEV || import.meta?.env?.MODE === 'development'
-    if (isDev) {
-      console.log('Development mode detected, using localhost')
-      return 'http://localhost:5001/api'
-    }
-    
-    // Production fallback - always use the live API
-    console.log('Production mode, using live API')
-    return 'https://hotfix.onrender.com/api'
-  } catch (error) {
-    console.error('Error in getApiUrl:', error)
-    // Emergency fallback
-    return 'https://hotfix.onrender.com/api'
-  }
-}
+import { getApiUrl } from '../utils/apiUrl'
 
 // Create API config with lazy evaluation
 let _apiConfig = null

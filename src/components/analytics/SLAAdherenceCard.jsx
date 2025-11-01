@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react'
-import { API_CONFIG } from '../../config/api'
 import { getSLAAdherenceColors } from '../../utils/styleHelpers'
 
-const API_URL = API_CONFIG.BASE_URL
 
 export default function SLAAdherenceCard() {
   const [data, setData] = useState(null)

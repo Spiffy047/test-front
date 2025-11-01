@@ -7,8 +7,6 @@ import { secureApiRequest } from '../../utils/api'
 import cloudinaryService from '../../services/cloudinaryService'
 import StatusWorkflow from './StatusWorkflow'
 
-const API_URL = API_CONFIG.BASE_URL
-
 export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpdate }) {
   const [messages, setMessages] = useState([])
   const [activities, setActivities] = useState([])

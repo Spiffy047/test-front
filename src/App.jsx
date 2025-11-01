@@ -16,9 +16,6 @@ import EnvCheck from './components/debug/EnvCheck'
 import { API_CONFIG } from './config/api'
 import { secureApiRequest } from './utils/api'
 
-// Backend API base URL for all API calls
-const API_URL = API_CONFIG.BASE_URL
-
 /**
  * Main App Component
  * Handles authentication, routing, and role-based dashboard rendering
@@ -101,6 +98,9 @@ function App() {
       if (err.name === 'TypeError' && err.message.includes('fetch')) {
         // Network/connection error
         setError('Cannot connect to server. Please check your internet connection or try again later.')
+      } else if (err.message.includes('API_URL')) {
+        // API configuration error
+        setError('Configuration error. Please try refreshing the page.')
       } else {
         // Authentication or other errors
         setError(err.message || 'Login failed')

@@ -5,8 +5,17 @@
 
 import { API_CONFIG } from '../config/api'
 
-// Base API URL from configuration
-const API_URL = API_CONFIG.BASE_URL
+// Base API URL from configuration with error handling
+let API_URL
+try {
+  API_URL = API_CONFIG.BASE_URL
+  console.log('API_URL configured as:', API_URL)
+} catch (error) {
+  console.error('Failed to load API configuration:', error)
+  // Emergency fallback
+  API_URL = 'https://hotfix.onrender.com/api'
+  console.log('Using emergency fallback API_URL:', API_URL)
+}
 
 /**
  * Get list of allowed domains for API calls (SSRF prevention)
@@ -18,15 +27,17 @@ const API_URL = API_CONFIG.BASE_URL
  */
 const getAllowedDomains = () => {
   try {
+    const baseUrl = API_URL || 'https://hotfix.onrender.com/api'
     return [
-      new URL(API_CONFIG.BASE_URL).hostname,  // Production API domain
-      'localhost',    // Local development
-      '127.0.0.1'     // Local loopback
+      new URL(baseUrl).hostname,  // Production API domain
+      'hotfix.onrender.com',      // Explicit production domain
+      'localhost',                // Local development
+      '127.0.0.1'                // Local loopback
     ]
   } catch (error) {
     console.error('Failed to parse API base URL:', error)
     // Fallback to safe defaults if config is invalid
-    return ['localhost', '127.0.0.1']
+    return ['hotfix.onrender.com', 'localhost', '127.0.0.1']
   }
 }
 

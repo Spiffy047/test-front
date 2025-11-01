@@ -13,7 +13,6 @@ import SystemAdminDashboard from './components/dashboards/SystemAdminDashboard'
 import EmailVerification from './components/auth/EmailVerification'
 import FixTicketNumbers from './components/admin/FixTicketNumbers'
 import EnvCheck from './components/debug/EnvCheck'
-import { API_CONFIG } from './config/api'
 import { secureApiRequest } from './utils/api'
 
 /**

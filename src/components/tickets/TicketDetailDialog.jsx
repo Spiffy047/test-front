@@ -2,7 +2,6 @@
 // Comprehensive ticket view with timeline, messaging, and file upload capabilities
 
 import { useState, useEffect, useRef } from 'react'
-import { API_CONFIG } from '../../config/api'
 import { secureApiRequest } from '../../utils/api'
 import cloudinaryService from '../../services/cloudinaryService'
 import StatusWorkflow from './StatusWorkflow'

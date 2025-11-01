@@ -1,5 +1,5 @@
 // Environment Check Component for debugging
-import { API_CONFIG } from '../../config/api'
+import { getApiUrl } from '../../utils/apiUrl'
 
 export default function EnvCheck() {
   const envInfo = {
@@ -7,7 +7,7 @@ export default function EnvCheck() {
     MODE: import.meta.env?.MODE,
     DEV: import.meta.env?.DEV,
     PROD: import.meta.env?.PROD,
-    API_CONFIG_BASE_URL: API_CONFIG?.BASE_URL,
+    API_CONFIG_BASE_URL: getApiUrl(),
     CLOUDINARY_CLOUD_NAME: import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME
   }
 

@@ -26,12 +26,8 @@ import ToastNotification from '../notifications/ToastNotification'
 import Footer from '../common/Footer'
 
 // Configuration and utilities
-import { API_CONFIG } from '../../config/api'
 import { getPriorityStyles, getStatusStyles } from '../../utils/styleHelpers'
 import { secureApiRequest } from '../../utils/api'
-
-// API base URL from configuration
-const API_URL = API_CONFIG.BASE_URL
 
 export default function NormalUserDashboard({ user, onLogout }) {
   // === STATE MANAGEMENT ===

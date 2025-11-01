@@ -3,19 +3,7 @@
  * 
  
 
-import { API_CONFIG } from '../config/api'
-
-// Base API URL from configuration with error handling
-let API_URL
-try {
-  API_URL = API_CONFIG.BASE_URL
-  console.log('API_URL configured as:', API_URL)
-} catch (error) {
-  console.error('Failed to load API configuration:', error)
-  // Emergency fallback
-  API_URL = 'https://hotfix.onrender.com/api'
-  console.log('Using emergency fallback API_URL:', API_URL)
-}
+import { getApiUrl } from './apiUrl'
 
 /**
  * Get list of allowed domains for API calls (SSRF prevention)
@@ -27,7 +15,7 @@ try {
  */
 const getAllowedDomains = () => {
   try {
-    const baseUrl = API_URL || 'https://hotfix.onrender.com/api'
+    const baseUrl = getApiUrl()
     return [
       new URL(baseUrl).hostname,  // Production API domain
       'hotfix.onrender.com',      // Explicit production domain
@@ -125,6 +113,7 @@ const isUrlSafe = (url) => {
  */
 export const secureApiRequest = async (endpoint, options = {}) => {
   // Construct full URL from base URL and endpoint
+  const API_URL = getApiUrl()
   const fullUrl = `${API_URL}${endpoint}`
   
   // Security validation: Prevent SSRF attacks
@@ -196,5 +185,5 @@ export const secureApiRequest = async (endpoint, options = {}) => {
   return data
 }
 
-// Export API URL for use in other modules
-export { API_URL }
+// Export API URL getter for use in other modules
+export const getApiUrlForExport = getApiUrl

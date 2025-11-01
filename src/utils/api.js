@@ -1,19 +1,7 @@
 /**
  * Secure API utility functions for IT ServiceDesk frontend
  * 
- * Enhanced API communication with intelligent Content-Type handling:
- * - Automatic Content-Type detection for JSON vs FormData
- * - CSRF protection for state-changing requests
- * - SSRF prevention through URL validation
- * - Comprehensive error handling and parsing
- * - Domain allowlisting for security
- * 
- * Recent enhancements:
- * - Fixed Content-Type headers for file uploads
- * - Enhanced FormData detection and handling
- * - Improved error parsing for better UX
- * - Secure multipart form data support
- */
+ 
 
 import { API_CONFIG } from '../config/api'
 

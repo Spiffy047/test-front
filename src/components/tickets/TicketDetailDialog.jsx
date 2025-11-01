@@ -4,6 +4,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { API_CONFIG } from '../../config/api'
 import { secureApiRequest } from '../../utils/api'
+import cloudinaryService from '../../services/cloudinaryService'
+import StatusWorkflow from './StatusWorkflow'
 
 const API_URL = API_CONFIG.BASE_URL
 
@@ -67,13 +69,8 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
   }
 
   const fetchAttachments = async () => {
-    try {
-      const data = await secureApiRequest(`/files/ticket/${ticket.id}`)
-      setAttachments(data || [])
-    } catch (err) {
-      console.error('Failed to fetch attachments:', err)
-      setAttachments([])
-    }
+    // Attachments now handled via timeline messages
+    setAttachments([])
   }
 
   const handleFileUpload = async (e) => {
@@ -81,26 +78,35 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
     if (!file) return
 
     setUploading(true)
-    const formData = new FormData()
-    
-    // Configure form data for timeline file upload
-    formData.append('file', file)  // Standard field name for /files/upload
-    formData.append('ticket_id', ticket.ticket_id || ticket.id)  // Support both ID formats
-    formData.append('user_id', currentUser.id)  // User identification
-    
-    console.log('Uploading file:', file.name, 'to ticket:', ticket.ticket_id || ticket.id)
     
     try {
-      const result = await secureApiRequest('/files/upload', {
+      // Upload directly to Cloudinary
+      const result = await cloudinaryService.uploadFile(
+        file, 
+        ticket.ticket_id || ticket.id, 
+        currentUser.id
+      )
+      
+      // Add file info to timeline via backend
+      await secureApiRequest('/messages', {
         method: 'POST',
-        body: formData
+        body: JSON.stringify({
+          ticket_id: ticket.ticket_id || ticket.id,
+          sender_id: currentUser.id,
+          sender_name: currentUser.name,
+          sender_role: currentUser.role,
+          message: `Uploaded file: ${file.name}`,
+          image_url: result.url,
+          file_info: {
+            filename: file.name,
+            size: result.bytes,
+            format: result.format,
+            public_id: result.public_id
+          }
+        })
       })
       
-      console.log('Upload result:', result)
-      
-      // Refresh messages to show the uploaded file in timeline
       await fetchMessages()
-      fetchAttachments()
       alert('File uploaded successfully!')
     } catch (err) {
       console.error('Failed to upload file:', err)
@@ -142,7 +148,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
 
   const handleSaveChanges = async () => {
     try {
-      await secureApiRequest(`/tickets/${ticket.id}`, {
+      const response = await secureApiRequest(`/tickets/${ticket.id}`, {
         method: 'PUT',
         body: JSON.stringify({
           ...editedTicket,
@@ -150,6 +156,9 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
           performed_by_name: currentUser.name
         })
       })
+      
+      // Update local ticket state
+      Object.assign(ticket, response)
       setIsEditing(false)
       onUpdate()
       fetchActivities()
@@ -218,26 +227,9 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
         <div className="p-6 border-b">
           <p className="text-gray-700 mb-4">{ticket.description}</p>
           
-          {attachments.length > 0 && (
-            <div className="mb-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Attachments ({attachments.length})</h4>
-              <div className="flex flex-wrap gap-2">
-                {attachments.map(att => (
-                  <a
-                    key={att.id}
-                    href={`${API_URL.replace('/api', '')}${att.download_url}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm flex items-center gap-2"
-                  >
-                    {att.filename} ({att.file_size_mb}MB)
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
+
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Assigned Agent</label>
               {isEditing ? (
@@ -260,23 +252,6 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
               <p className="text-gray-900">{new Date(ticket.created_at).toLocaleString()}</p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-              {isEditing ? (
-                <select
-                  value={editedTicket.status}
-                  onChange={(e) => setEditedTicket({...editedTicket, status: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="New">New</option>
-                  <option value="Open">Open</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Closed">Closed</option>
-                </select>
-              ) : (
-                <p className="text-gray-900">{ticket.status}</p>
-              )}
-            </div>
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
               {isEditing ? (
                 <select
@@ -294,6 +269,17 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
               )}
             </div>
           </div>
+          
+          <StatusWorkflow 
+            currentStatus={ticket.status}
+            onStatusChange={(newStatus) => {
+              setEditedTicket({...editedTicket, status: newStatus})
+              handleSaveChanges()
+            }}
+            userRole={currentUser.role}
+            ticketCreatedBy={ticket.created_by}
+            currentUserId={currentUser.id}
+          />
           {isEditing && (
             <button
               onClick={handleSaveChanges}
@@ -332,13 +318,13 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                           </span>
                         </div>
                         <p className="text-gray-700">{item.message}</p>
-                        {item.image_url && (
+                        {(item.image_url || item.file_info?.url) && (
                           <div className="mt-3">
                             <img 
-                              src={item.image_url} 
+                              src={item.image_url || item.file_info?.url} 
                               alt="Attachment" 
                               className="max-w-sm max-h-64 rounded-lg border cursor-pointer hover:opacity-90"
-                              onClick={() => window.open(item.image_url, '_blank')}
+                              onClick={() => window.open(item.image_url || item.file_info?.url, '_blank')}
                             />
                           </div>
                         )}

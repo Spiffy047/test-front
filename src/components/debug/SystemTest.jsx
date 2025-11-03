@@ -82,6 +82,65 @@ export default function SystemTest() {
       return { message: `User has ${data.count} alerts`, count: data.count }
     })
 
+    // 11. Ticket Creation
+    await runTest('Ticket Creation', async () => {
+      const newTicket = {
+        title: 'Test Ticket - System Test',
+        description: 'Automated test ticket creation',
+        priority: 'Medium',
+        category: 'Software',
+        created_by: 1
+      }
+      const data = await apiRequest('/tickets', {
+        method: 'POST',
+        body: JSON.stringify(newTicket)
+      })
+      return { message: `Created ticket ${data.ticket_id}`, ticket_id: data.ticket_id }
+    })
+
+    // 12. Ticket Detail
+    await runTest('Ticket Detail', async () => {
+      const data = await apiRequest('/tickets/TKT-1001')
+      return { message: `Loaded ticket ${data.ticket_id}`, status: data.status }
+    })
+
+    // 13. Timeline Messages
+    await runTest('Timeline Messages', async () => {
+      const testMessage = {
+        ticket_id: 'TKT-1001',
+        sender_id: 1,
+        message: 'Test message from system test'
+      }
+      const data = await apiRequest('/messages', {
+        method: 'POST',
+        body: JSON.stringify(testMessage)
+      })
+      return { message: `Added message to timeline`, id: data.id }
+    })
+
+    // 14. Cloudinary Upload Test
+    await runTest('Cloudinary Upload', async () => {
+      try {
+        // Create a small test file
+        const canvas = document.createElement('canvas')
+        canvas.width = 100
+        canvas.height = 100
+        const ctx = canvas.getContext('2d')
+        ctx.fillStyle = '#FF0000'
+        ctx.fillRect(0, 0, 100, 100)
+        
+        return new Promise((resolve) => {
+          canvas.toBlob(async (blob) => {
+            const testFile = new File([blob], 'test.png', { type: 'image/png' })
+            const result = await cloudinaryService.uploadFile(testFile, 'TEST-SYSTEM', 1)
+            resolve({ message: `Upload successful`, url: result.url })
+          })
+        })
+      } catch (error) {
+        throw new Error(`Upload failed: ${error.message}`)
+      }
+    })
+
     setTesting(false)
   }
 
@@ -113,7 +172,11 @@ export default function SystemTest() {
           'Ticket Aging',
           'Cloudinary Config',
           'Messages API',
-          'Alerts API'
+          'Alerts API',
+          'Ticket Creation',
+          'Ticket Detail',
+          'Timeline Messages',
+          'Cloudinary Upload'
         ].map(test => (
           <div key={test} className={`p-2 rounded ${getStatusColor(results[test])}`}>
             <div className="font-medium">{test}</div>

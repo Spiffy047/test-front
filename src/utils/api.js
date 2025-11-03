@@ -186,4 +186,4 @@ export const secureApiRequest = async (endpoint, options = {}) => {
 }
 
 // Export API URL getter for use in other modules
-export const getApiUrlForExport = getApiUrl
+export const getApiUrlForExport = () => getApiUrl()

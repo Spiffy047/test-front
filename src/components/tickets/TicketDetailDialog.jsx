@@ -315,39 +315,22 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                           </span>
                         </div>
                         <p className="text-gray-700">{item.message}</p>
-                        {/* Check for file upload messages and try to find Cloudinary URLs */}
+                        {/* Check for file upload messages */}
                         {(() => {
                           // Check if message contains file upload info
                           if (item.message && item.message.includes('Uploaded file:')) {
                             const filename = item.message.split('Uploaded file: ')[1]?.split(' (')[0]
                             if (filename) {
-                              // Generate Cloudinary URL based on ticket and user info
-                              const ticketId = ticket.ticket_id || ticket.id
-                              const cloudinaryUrl = `https://res.cloudinary.com/dn1dznhej/image/upload/servicedesk/tickets/${ticketId}/${filename}`
-                              
                               return (
                                 <div className="mt-3">
                                   <div className="flex items-center gap-2 p-2 bg-blue-50 rounded border">
                                     <span className="text-blue-600">📎</span>
-                                    <a 
-                                      href={cloudinaryUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-600 hover:text-blue-800 underline"
-                                    >
-                                      {filename}
-                                    </a>
+                                    <span className="text-blue-800 font-medium">{filename}</span>
+                                    <span className="text-xs text-gray-500">(File uploaded to Cloudinary)</span>
                                   </div>
-                                  <img 
-                                    src={cloudinaryUrl}
-                                    alt={filename}
-                                    className="mt-2 max-w-sm max-h-64 rounded-lg border cursor-pointer hover:opacity-90"
-                                    onClick={() => window.open(cloudinaryUrl, '_blank')}
-                                    onError={(e) => {
-                                      e.target.style.display = 'none'
-                                      e.target.previousSibling.querySelector('span').textContent = '📄'
-                                    }}
-                                  />
+                                  <div className="mt-2 text-xs text-gray-600">
+                                    Note: File preview requires direct Cloudinary URL from upload response
+                                  </div>
                                 </div>
                               )
                             }

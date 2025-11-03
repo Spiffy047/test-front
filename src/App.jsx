@@ -14,6 +14,7 @@ import EmailVerification from './components/auth/EmailVerification'
 import FixTicketNumbers from './components/admin/FixTicketNumbers'
 import EnvCheck from './components/debug/EnvCheck'
 import SystemTest from './components/debug/SystemTest'
+import CloudinaryImageTest from './components/debug/CloudinaryImageTest'
 
 import { apiRequest } from './utils/simpleApi'
 
@@ -230,6 +231,7 @@ function App() {
       </Router>
       <EnvCheck />
       <SystemTest />
+      <CloudinaryImageTest />
     </div>
   )
 }

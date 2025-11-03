@@ -315,16 +315,60 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                           </span>
                         </div>
                         <p className="text-gray-700">{item.message}</p>
-                        {(item.image_url || item.file_info?.url) && (
-                          <div className="mt-3">
-                            <img 
-                              src={item.image_url || item.file_info?.url} 
-                              alt="Attachment" 
-                              className="max-w-sm max-h-64 rounded-lg border cursor-pointer hover:opacity-90"
-                              onClick={() => window.open(item.image_url || item.file_info?.url, '_blank')}
-                            />
-                          </div>
-                        )}
+                        {/* Check for file upload messages and try to find Cloudinary URLs */}
+                        {(() => {
+                          // Check if message contains file upload info
+                          if (item.message && item.message.includes('Uploaded file:')) {
+                            const filename = item.message.split('Uploaded file: ')[1]?.split(' (')[0]
+                            if (filename) {
+                              // Generate Cloudinary URL based on ticket and user info
+                              const ticketId = ticket.ticket_id || ticket.id
+                              const cloudinaryUrl = `https://res.cloudinary.com/dn1dznhej/image/upload/servicedesk/tickets/${ticketId}/${filename}`
+                              
+                              return (
+                                <div className="mt-3">
+                                  <div className="flex items-center gap-2 p-2 bg-blue-50 rounded border">
+                                    <span className="text-blue-600">📎</span>
+                                    <a 
+                                      href={cloudinaryUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 underline"
+                                    >
+                                      {filename}
+                                    </a>
+                                  </div>
+                                  <img 
+                                    src={cloudinaryUrl}
+                                    alt={filename}
+                                    className="mt-2 max-w-sm max-h-64 rounded-lg border cursor-pointer hover:opacity-90"
+                                    onClick={() => window.open(cloudinaryUrl, '_blank')}
+                                    onError={(e) => {
+                                      e.target.style.display = 'none'
+                                      e.target.previousSibling.querySelector('span').textContent = '📄'
+                                    }}
+                                  />
+                                </div>
+                              )
+                            }
+                          }
+                          
+                          // Fallback for direct image_url or file_info
+                          if (item.image_url || item.file_info?.url) {
+                            return (
+                              <div className="mt-3">
+                                <img 
+                                  src={item.image_url || item.file_info?.url} 
+                                  alt="Attachment" 
+                                  className="max-w-sm max-h-64 rounded-lg border cursor-pointer hover:opacity-90"
+                                  onClick={() => window.open(item.image_url || item.file_info?.url, '_blank')}
+                                />
+                              </div>
+                            )
+                          }
+                          
+                          return null
+                        })()}
                       </div>
                     </div>
                   </>

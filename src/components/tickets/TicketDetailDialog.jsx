@@ -315,43 +315,27 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                           </span>
                         </div>
                         <p className="text-gray-700">{item.message}</p>
-                        {/* Check for file upload messages */}
-                        {(() => {
-                          // Check if message contains file upload info
-                          if (item.message && item.message.includes('Uploaded file:')) {
-                            const filename = item.message.split('Uploaded file: ')[1]?.split(' (')[0]
-                            if (filename) {
-                              return (
-                                <div className="mt-3">
-                                  <div className="flex items-center gap-2 p-2 bg-blue-50 rounded border">
-                                    <span className="text-blue-600">📎</span>
-                                    <span className="text-blue-800 font-medium">{filename}</span>
-                                    <span className="text-xs text-gray-500">(File uploaded to Cloudinary)</span>
-                                  </div>
-                                  <div className="mt-2 text-xs text-gray-600">
-                                    Note: File preview requires direct Cloudinary URL from upload response
-                                  </div>
-                                </div>
-                              )
-                            }
-                          }
-                          
-                          // Fallback for direct image_url or file_info
-                          if (item.image_url || item.file_info?.url) {
-                            return (
-                              <div className="mt-3">
-                                <img 
-                                  src={item.image_url || item.file_info?.url} 
-                                  alt="Attachment" 
-                                  className="max-w-sm max-h-64 rounded-lg border cursor-pointer hover:opacity-90"
-                                  onClick={() => window.open(item.image_url || item.file_info?.url, '_blank')}
-                                />
+                        {/* File attachments */}
+                        {item.image_url && (
+                          <div className="mt-3">
+                            {item.image_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                              <img 
+                                src={item.image_url} 
+                                alt="Attachment" 
+                                className="max-w-sm max-h-64 rounded-lg border cursor-pointer hover:opacity-90"
+                                onClick={() => window.open(item.image_url, '_blank')}
+                              />
+                            ) : (
+                              <div className="flex items-center gap-2 p-3 bg-blue-50 rounded border cursor-pointer hover:bg-blue-100" onClick={() => window.open(item.image_url, '_blank')}>
+                                <span className="text-blue-600">📎</span>
+                                <span className="text-blue-800 font-medium">
+                                  {item.file_info?.filename || item.message?.split('Uploaded file: ')[1] || 'Download File'}
+                                </span>
+                                <span className="text-xs text-gray-500 ml-auto">Click to view</span>
                               </div>
-                            )
-                          }
-                          
-                          return null
-                        })()}
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </>

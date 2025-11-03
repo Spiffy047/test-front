@@ -19,11 +19,7 @@ export default function SystemTest() {
     setTesting(true)
     setResults({})
 
-    // 1. API Health Check
-    await runTest('API Health', async () => {
-      const data = await apiRequest('/health')
-      return { message: 'API is healthy', data }
-    })
+    // API Health test removed - endpoint deprecated
 
     // 2. Authentication Test
     await runTest('Authentication', async () => {
@@ -109,7 +105,6 @@ export default function SystemTest() {
       
       <div className="space-y-2 text-xs">
         {[
-          'API Health',
           'Authentication', 
           'Users API',
           'Tickets API',

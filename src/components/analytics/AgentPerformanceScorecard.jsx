@@ -1,7 +1,7 @@
 // Import React hooks for state management and lifecycle
 import { useEffect, useState } from 'react'
 import { getPerformanceRatingStyles } from '../../utils/styleHelpers'
-import { secureApiRequest } from '../../utils/api'
+import { apiRequest } from '../../utils/simpleApi'
 
 // API base URL for backend communication
 
@@ -22,7 +22,7 @@ export default function AgentPerformanceScorecard() {
       try {
         setLoading(true)
         setError(null)
-        const data = await secureApiRequest('/analytics/agent-performance-detailed')
+        const data = await apiRequest('/analytics/agent-performance-detailed')
         setAgents(Array.isArray(data) ? data : [])
       } catch (error) {
         console.error('Failed to fetch agent performance data:', error)

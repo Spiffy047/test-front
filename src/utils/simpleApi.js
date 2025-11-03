@@ -1,16 +1,11 @@
 // Simple API utility for login functionality
 const getApiUrl = () => {
-  // Try environment variable first
-  if (import.meta?.env?.VITE_API_URL) {
-    return import.meta.env.VITE_API_URL
-  }
-  
-  // Development fallback
+  // Development mode
   if (import.meta?.env?.DEV) {
-    return 'http://localhost:5001/api'
+    return import.meta?.env?.VITE_API_URL || 'http://localhost:5001/api'
   }
   
-  // Production fallback
+  // Production mode - always use production URL
   return 'https://hotfix.onrender.com/api'
 }
 

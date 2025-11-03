@@ -4,17 +4,12 @@ export const getApiUrl = () => {
   const prodUrl = 'https://hotfix.onrender.com/api'
   
   try {
-    // Try to get from environment
-    const envUrl = import.meta?.env?.VITE_API_URL
-    if (envUrl && typeof envUrl === 'string') {
-      return envUrl
-    }
-    
-    // Check if development
+    // Check if we're in development first
     if (import.meta?.env?.DEV) {
-      return 'http://localhost:5001/api'
+      return import.meta?.env?.VITE_API_URL || 'http://localhost:5001/api'
     }
     
+    // Production mode - always use production URL
     return prodUrl
   } catch (error) {
     console.error('API URL config error:', error)

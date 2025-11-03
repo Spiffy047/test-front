@@ -13,6 +13,7 @@ import SystemAdminDashboard from './components/dashboards/SystemAdminDashboard'
 import EmailVerification from './components/auth/EmailVerification'
 import FixTicketNumbers from './components/admin/FixTicketNumbers'
 import EnvCheck from './components/debug/EnvCheck'
+import CloudinaryTest from './components/debug/CloudinaryTest'
 import { apiRequest } from './utils/simpleApi'
 
 /**
@@ -227,6 +228,7 @@ function App() {
         </Routes>
       </Router>
       <EnvCheck />
+      <CloudinaryTest />
     </div>
   )
 }

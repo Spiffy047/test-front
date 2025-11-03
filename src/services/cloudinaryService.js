@@ -1,8 +1,8 @@
 // Cloudinary service for frontend file uploads
 class CloudinaryService {
   constructor() {
-    this.cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
-    this.uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+    this.cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'dn1dznhej'
+    this.uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'servicedesk_preset'
   }
 
   async uploadFile(file, ticketId, userId) {

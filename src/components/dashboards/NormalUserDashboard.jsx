@@ -1,106 +1,73 @@
-/**
- * Normal User Dashboard Component
- * 
- * Main dashboard for end users with intelligent ticket management:
- * - Personal ticket view with agent name resolution
- * - Multi-file upload support during ticket creation
- * - Real-time search with 300ms debouncing
- * - Auto-assignment notification display
- * - Responsive design for all devices
- * 
- * Recent enhancements:
- * - Fixed Content-Type headers for file uploads
- * - Added agent name display instead of IDs
- * - Enhanced file upload error handling
- * - Improved multipart form data support
- */
+// Normal User Dashboard with ticket management
 
-// React hooks for state management
+
 import { useState, useEffect } from 'react'
 
-// Component imports
+
 import TicketDetailDialog from '../tickets/TicketDetailDialog'
 import DataModal from '../common/DataModal'
 import NotificationBell from '../notifications/NotificationBell'
 import ToastNotification from '../notifications/ToastNotification'
 import Footer from '../common/Footer'
 
-// Configuration and utilities
+
 import { getPriorityStyles, getStatusStyles } from '../../utils/styleHelpers'
 import { secureApiRequest } from '../../utils/api'
 
 export default function NormalUserDashboard({ user, onLogout }) {
-  // === STATE MANAGEMENT ===
-  // Ticket data with real-time filtering
-  const [tickets, setTickets] = useState([])              // Filtered tickets for display
-  const [allTickets, setAllTickets] = useState([])        // Complete user ticket collection
-  const [searchTerm, setSearchTerm] = useState('')        // Debounced search input
-  
-  // UI state for modals and interactions
-  const [showCreateModal, setShowCreateModal] = useState(false)    // Ticket creation modal
-  const [selectedTicket, setSelectedTicket] = useState(null)       // Selected ticket for details
-  const [modalData, setModalData] = useState(null)                 // Statistics modal data
-  const [toastNotifications, setToastNotifications] = useState([]) // User feedback notifications
+  const [tickets, setTickets] = useState([])
+  const [allTickets, setAllTickets] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [selectedTicket, setSelectedTicket] = useState(null)
+  const [modalData, setModalData] = useState(null)
+  const [toastNotifications, setToastNotifications] = useState([])
 
-  // === EFFECTS ===
-  // Load user tickets on component mount
+
   useEffect(() => {
     fetchTickets()
   }, [])
 
-  // Debounced search effect (300ms delay for performance)
-  // Prevents excessive API calls while user is typing
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (!searchTerm) {
-        // No search term - show all tickets
+  
         setTickets(allTickets)
         return
       }
       
-      // Filter tickets by ID, title, or description (case-insensitive)
+
       const filtered = allTickets.filter(t => 
         t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         t.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         t.description.toLowerCase().includes(searchTerm.toLowerCase())
       )
       setTickets(filtered)
-    }, 300) // 300ms debounce delay
-
-    // Cleanup timeout on dependency change
+    }, 300)
     return () => clearTimeout(timeoutId)
   }, [searchTerm, allTickets])
 
-  // === EVENT HANDLERS ===
-  
-  /**
-   * Handle notification clicks with intelligent ticket lookup
-   * 
-   * Searches local cache first, then fetches from server if needed.
-   * Updates local state with fresh data when available.
-   * 
-   * @param {string} ticketId - Ticket ID or ticket_id format
-   * @param {string} alertType - Alert type for future routing
-   */
+
   const handleNotificationClick = async (ticketId, alertType) => {
     try {
-      // First try to find ticket in current local data
+
       let ticket = tickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
       
-      // If not found locally, fetch fresh data from server
+
       if (!ticket) {
         const data = await secureApiRequest(`/tickets?created_by=${user.id}`)
         const userTickets = data.tickets || data || []
         ticket = userTickets.find(t => t.id === ticketId || t.ticket_id === ticketId)
         
-        // Update local state with fresh data if available
+
         if (userTickets.length > 0) {
           setTickets(userTickets)
           setAllTickets(userTickets)
         }
       }
       
-      // Open ticket detail dialog or show error
+
       if (ticket) {
         setSelectedTicket(ticket)
       } else {
@@ -112,62 +79,46 @@ export default function NormalUserDashboard({ user, onLogout }) {
     }
   }
 
-  /**
-   * Fetch user tickets with agent name resolution
-   * 
-   * Retrieves tickets from backend with resolved agent names,
-   * handles multiple response formats, and updates local state.
-   * Includes error handling to prevent UI crashes.
-   */
+
   const fetchTickets = async () => {
     try {
-      // Fetch tickets created by current user
+
       const data = await secureApiRequest(`/tickets?created_by=${user.id}`)
       
-      // Handle different response formats from backend
+
       if (data.tickets && Array.isArray(data.tickets)) {
-        // Standard format: { tickets: [...] }
+
         setTickets(data.tickets)
         setAllTickets(data.tickets)
       } else if (Array.isArray(data)) {
-        // Direct array format: [...]
+
         setTickets(data)
         setAllTickets(data)
       } else {
-        // Unexpected format - default to empty array
+
         setTickets([])
         setAllTickets([])
       }
     } catch (err) {
       console.error('Failed to fetch tickets:', err)
-      // Set empty arrays on error to prevent UI crashes
+
       setTickets([])
       setAllTickets([])
     }
   }
 
-  /**
-   * Handle ticket creation with intelligent file upload
-   * 
-   * Enhanced process:
-   * 1. Detect file uploads and use multipart form data
-   * 2. Create ticket with auto-assignment
-   * 3. Upload additional files to timeline
-   * 4. Refresh UI with success feedback
-   * 
-   * @param {Event} e - Form submission event with file data
-   */
+
   const handleCreateTicket = async (e) => {
     e.preventDefault()
     const formData = new FormData(e.target)
     
     try {
-      // Detect file uploads and determine request format
+
       const fileInput = e.target.querySelector('input[type="file"]')
       const hasFiles = fileInput && fileInput.files.length > 0
       
       if (hasFiles) {
-        // Use multipart form data for file upload support
+
         const ticketFormData = new FormData()
         ticketFormData.append('title', formData.get('title'))
         ticketFormData.append('description', formData.get('description'))
@@ -175,7 +126,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
         ticketFormData.append('category', formData.get('category'))
         ticketFormData.append('created_by', user.id)
         
-        // Add the first file as attachment (backend expects single file)
+
         ticketFormData.append('attachment', fileInput.files[0])
         
         console.log('Creating ticket with attachment:', fileInput.files[0].name)
@@ -186,7 +137,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
           body: ticketFormData
         })
         
-        // Handle multiple file uploads to timeline
+
         if (fileInput.files.length > 1) {
           for (let i = 1; i < fileInput.files.length; i++) {
             const file = fileInput.files[i]
@@ -207,7 +158,7 @@ export default function NormalUserDashboard({ user, onLogout }) {
           }
         }
       } else {
-        // Standard JSON request for text-only tickets
+
         const newTicket = await secureApiRequest('/tickets', {
           method: 'POST',
           body: JSON.stringify({
@@ -220,10 +171,9 @@ export default function NormalUserDashboard({ user, onLogout }) {
         })
       }
       
-      // Clean up form and refresh ticket list
-      setShowCreateModal(false)  // Close modal
-      fetchTickets()              // Refresh ticket list
-      e.target.reset()            // Clear form
+      setShowCreateModal(false)
+      fetchTickets()
+      e.target.reset()
       alert('Ticket created successfully!')
       
     } catch (err) {

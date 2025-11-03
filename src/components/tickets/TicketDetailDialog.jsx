@@ -1,5 +1,4 @@
-// Ticket Detail Dialog Component
-// Comprehensive ticket view with timeline, messaging, and file upload capabilities
+// Ticket Detail Dialog with timeline and messaging
 
 import { useState, useEffect, useRef } from 'react'
 import { secureApiRequest } from '../../utils/api'
@@ -169,7 +168,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
   const timeline = [...messages, ...activities]
     .sort((a, b) => new Date(a.timestamp || a.created_at) - new Date(b.timestamp || b.created_at))
 
-  // Determine edit permissions based on user role and ticket ownership
+
   const canEdit = currentUser.role !== 'Normal User' || (currentUser.role === 'Normal User' && ticket.created_by === currentUser.id && ticket.status !== 'Closed')
 
   return (
@@ -315,7 +314,7 @@ export default function TicketDetailDialog({ ticket, onClose, currentUser, onUpd
                           </span>
                         </div>
                         <p className="text-gray-700">{item.message}</p>
-                        {/* File attachments */}
+              
                         {item.image_url && (
                           <div className="mt-3">
                             {item.image_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (

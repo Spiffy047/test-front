@@ -12,8 +12,6 @@ import SystemAdminDashboard from './components/dashboards/SystemAdminDashboard'
 // Import email verification component for 2-step authentication
 import EmailVerification from './components/auth/EmailVerification'
 import FixTicketNumbers from './components/admin/FixTicketNumbers'
-import EnvCheck from './components/debug/EnvCheck'
-import SystemTest from './components/debug/SystemTest'
 
 import { apiRequest } from './utils/simpleApi'
 
@@ -228,8 +226,7 @@ function App() {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>
-      <EnvCheck />
-      <SystemTest />
+
     </div>
   )
 }

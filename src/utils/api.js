@@ -1,7 +1,6 @@
 /**
  * Secure API utility functions for IT ServiceDesk frontend
- * 
- 
+ */
 
 import { getApiUrl } from './apiUrl'
 

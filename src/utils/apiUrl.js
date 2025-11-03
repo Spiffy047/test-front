@@ -22,4 +22,6 @@ export const getApiUrl = () => {
   }
 }
 
-export default getApiUrl
+// Default export
+const getApiUrlDefault = getApiUrl
+export default getApiUrlDefault

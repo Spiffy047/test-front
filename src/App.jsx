@@ -13,7 +13,7 @@ import SystemAdminDashboard from './components/dashboards/SystemAdminDashboard'
 import EmailVerification from './components/auth/EmailVerification'
 import FixTicketNumbers from './components/admin/FixTicketNumbers'
 import EnvCheck from './components/debug/EnvCheck'
-import { secureApiRequest } from './utils/api'
+import { apiRequest } from './utils/simpleApi'
 
 /**
  * Main App Component
@@ -41,11 +41,7 @@ function App() {
       if (token) {
         try {
           // Validate token with backend
-          const userData = await secureApiRequest('/auth/me', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          })
+          const userData = await apiRequest('/auth/me')
           
           if (userData && userData.id) {
             setUser(userData)
@@ -76,7 +72,7 @@ function App() {
 
     try {
       // Make API call to authenticate user using secure wrapper
-      const responseData = await secureApiRequest('/auth/login', {
+      const responseData = await apiRequest('/auth/login', {
         method: 'POST',
         body: JSON.stringify(formData)
       })

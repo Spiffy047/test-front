@@ -7,7 +7,13 @@ export default function EnvCheck() {
     MODE: import.meta.env?.MODE,
     DEV: import.meta.env?.DEV,
     PROD: import.meta.env?.PROD,
-    API_CONFIG_BASE_URL: getApiUrl(),
+    API_CONFIG_BASE_URL: (() => {
+      try {
+        return getApiUrl()
+      } catch (e) {
+        return 'Error: ' + e.message
+      }
+    })(),
     CLOUDINARY_CLOUD_NAME: import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME
   }
 
